@@ -47,17 +47,10 @@ export default function Binder() {
                 <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
                   <button
                     onClick={() => chat(b.sellerId, b.handle, b.id)}
-                    title="Message creator"
-                    style={{ flex: "none", width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--kz-surface-2)", border: "none", borderRadius: 8, color: "var(--kz-text-secondary)" }}
-                  >
-                    <Icon icon="message-circle" size={15} />
-                  </button>
-                  <button
-                    onClick={() => setState({ checkoutId: b.id, funded: false })}
                     style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 5, height: 30, background: accent, border: 0, borderRadius: 8, fontSize: 11.5, fontWeight: 700, color: "#ffffff" }}
                   >
-                    <Icon icon="zap" size={13} />
-                    Hire Now
+                    <Icon icon="message-circle" size={13} />
+                    Chat
                   </button>
                 </div>
               )}

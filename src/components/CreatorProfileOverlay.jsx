@@ -94,17 +94,10 @@ export default function CreatorProfileOverlay() {
             <div style={{ display: "flex", gap: 10, flex: "none" }}>
               <button
                 onClick={() => chat(pg.sellerId, pg.handle, pg.id)}
-                style={{ padding: "12px 20px", background: "var(--kz-surface-2)", borderRadius: 12, fontSize: 13, fontWeight: 700, color: "var(--kz-text-secondary)", display: "flex", alignItems: "center", gap: 7 }}
+                style={{ padding: "12px 22px", background: accent, borderRadius: 12, display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: "#fff", boxShadow: "0 6px 16px rgba(5,150,105,0.24)" }}
               >
                 <Icon icon="message-circle" size={15} />
                 Chat
-              </button>
-              <button
-                onClick={() => setState({ checkoutId: pg.id, profileId: null, funded: false })}
-                style={{ padding: "12px 22px", background: accent, borderRadius: 12, display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: "#fff", boxShadow: "0 6px 16px rgba(5,150,105,0.24)" }}
-              >
-                <Icon icon="zap" size={15} />
-                Hire Now
               </button>
             </div>
           )}
