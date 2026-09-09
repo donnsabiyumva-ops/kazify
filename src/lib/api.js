@@ -173,6 +173,15 @@ export async function getFeaturedGigs(limit = 6) {
   return (data ?? []).map(mapGigRow);
 }
 
+// A seller's active gigs — used by the chat's "Hire Now" button when the
+// conversation wasn't opened from a specific gig (e.g. from the inbox), so
+// it can offer the right service (or a picker, if they have more than one).
+export async function getGigsBySeller(sellerId) {
+  const { data, error } = await supabase.from("gigs").select(GIG_SELECT).eq("seller_id", sellerId).eq("status", "active").order("created_at", { ascending: false });
+  if (error) fail("getGigsBySeller", error);
+  return (data ?? []).map(mapGigRow);
+}
+
 export async function createSwipe(clientId, gigId, direction) {
   const { error } = await supabase.from("swipes").upsert({ client_id: clientId, gig_id: gigId, direction }, { onConflict: "client_id,gig_id" });
   if (error) fail("createSwipe", error);

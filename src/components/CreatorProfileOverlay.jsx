@@ -93,7 +93,7 @@ export default function CreatorProfileOverlay() {
           {!pg.isDemo && (
             <div style={{ display: "flex", gap: 10, flex: "none" }}>
               <button
-                onClick={() => chat(pg.sellerId, pg.handle)}
+                onClick={() => chat(pg.sellerId, pg.handle, pg.id)}
                 style={{ padding: "12px 20px", background: "var(--kz-surface-2)", borderRadius: 12, fontSize: 13, fontWeight: 700, color: "var(--kz-text-secondary)", display: "flex", alignItems: "center", gap: 7 }}
               >
                 <Icon icon="message-circle" size={15} />

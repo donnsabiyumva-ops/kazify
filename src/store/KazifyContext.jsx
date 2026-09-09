@@ -583,10 +583,13 @@ export function KazifyProvider({ children }) {
   // Opens a direct chat with another profile — from a "Chat" button (leaves
   // the inbox list closed) or from picking a conversation in the inbox
   // (inboxOpen stays true underneath, so "back" returns to the list).
+  // gigId is optional: when the chat was opened from a specific gig (a
+  // profile page or the binder), it's carried along so the thread's
+  // "Hire Now" button knows which service to check out without asking.
   const chat = useCallback(
-    (otherId, handle) => {
+    (otherId, handle, gigId = null) => {
       if (!me || otherId === me.id) return;
-      setState((prev) => ({ ...prev, chatWith: { id: otherId, handle } }));
+      setState((prev) => ({ ...prev, chatWith: { id: otherId, handle, gigId } }));
     },
     [me]
   );
@@ -699,6 +702,7 @@ export function KazifyProvider({ children }) {
       thread,
       threadBusy,
       getCachedGig: (id) => gigsById.current.get(id),
+      cacheGigs,
       gigs: feed.concat(binder).concat(Array.from(gigsById.current.values())).filter((g, i, arr) => arr.findIndex((x) => x.id === g.id) === i),
     }),
     [
@@ -707,7 +711,7 @@ export function KazifyProvider({ children }) {
       ordersSeller, swipe, editAuth, startAuth, closeAuth, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, signOut, patchMe, editDraft,
       openSettings, closeSettings, saveSettings, pickPhoto, removePhoto, togglePref, refreshKyc,
       upload, createService, fund, acceptOrder, declineOrder, deliverOrder, approveOrder, disputeOrder, withdraw, submitKycNow, becomeSeller, openNotifFrom, chat,
-      closeChat, openInbox, closeInbox, sendChatMessage, conversations, thread, threadBusy,
+      closeChat, openInbox, closeInbox, sendChatMessage, conversations, thread, threadBusy, cacheGigs,
     ]
   );
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon.jsx";
 import { useKazify } from "../store/KazifyContext.jsx";
+import * as api from "../lib/api.js";
 
 function initialsOf(handle) {
   return (handle || "@").replace("@", "").slice(0, 2).toUpperCase();
@@ -12,16 +13,38 @@ function fmtClock(iso) {
 }
 
 export default function MessagesOverlay() {
-  const { state, me, chat, closeChat, closeInbox, openInbox, conversations, thread, threadBusy, sendChatMessage, accent } = useKazify();
+  const { state, setState, me, chat, closeChat, closeInbox, openInbox, conversations, thread, threadBusy, sendChatMessage, cacheGigs, accent } = useKazify();
   const [draft, setDraft] = useState("");
+  const [sellerGigs, setSellerGigs] = useState([]);
+  const [hirePickerOpen, setHirePickerOpen] = useState(false);
   const bottomRef = useRef(null);
 
   const open = state.inboxOpen || !!state.chatWith;
   const showingThread = !!state.chatWith;
+  const knownGigId = state.chatWith?.gigId;
 
   useEffect(() => {
     if (showingThread) bottomRef.current?.scrollIntoView({ block: "end" });
   }, [thread, showingThread]);
+
+  // The chat wasn't opened from a specific gig (e.g. from the inbox) — look
+  // up the seller's active gigs so "Hire Now" still knows what to offer.
+  useEffect(() => {
+    setHirePickerOpen(false);
+    if (!showingThread || knownGigId) {
+      setSellerGigs([]);
+      return;
+    }
+    let cancelled = false;
+    api.getGigsBySeller(state.chatWith.id).then((rows) => {
+      if (cancelled) return;
+      setSellerGigs(rows);
+      cacheGigs(rows);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [showingThread, knownGigId, state.chatWith?.id, cacheGigs]);
 
   if (!open) return null;
 
@@ -38,6 +61,10 @@ export default function MessagesOverlay() {
     setDraft("");
   };
 
+  const hireNow = (gigId) => setState({ checkoutId: gigId, chatWith: null, inboxOpen: false, funded: false });
+
+  const hireGigId = knownGigId || (sellerGigs.length === 1 ? sellerGigs[0].id : null);
+
   return (
     <div style={{ position: "fixed", inset: 0, background: "var(--kz-bg)", zIndex: 74, display: "flex", flexDirection: "column", animation: "kz-fade .18s ease-out" }}>
       <div style={{ maxWidth: 620, width: "100%", margin: "0 auto", padding: "26px 24px 0", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
@@ -45,7 +72,44 @@ export default function MessagesOverlay() {
           <button onClick={back} style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--kz-surface-2)", borderRadius: 10, color: "var(--kz-text-secondary)" }}>
             <Icon icon="chevron-left" size={17} />
           </button>
-          <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.3px" }}>{showingThread ? state.chatWith.handle : "Messages"}</span>
+          <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.3px", flex: 1, minWidth: 0 }}>{showingThread ? state.chatWith.handle : "Messages"}</span>
+
+          {showingThread && hireGigId && (
+            <button
+              onClick={() => hireNow(hireGigId)}
+              style={{ flex: "none", display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", background: accent, borderRadius: 11, fontSize: 12.5, fontWeight: 700, color: "#fff", boxShadow: "0 6px 16px rgba(5,150,105,0.24)" }}
+            >
+              <Icon icon="zap" size={14} />
+              Hire Now
+            </button>
+          )}
+
+          {showingThread && !hireGigId && sellerGigs.length > 1 && (
+            <div style={{ position: "relative", flex: "none" }}>
+              <button
+                onClick={() => setHirePickerOpen((o) => !o)}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", background: accent, borderRadius: 11, fontSize: 12.5, fontWeight: 700, color: "#fff", boxShadow: "0 6px 16px rgba(5,150,105,0.24)" }}
+              >
+                <Icon icon="zap" size={14} />
+                Hire Now
+              </button>
+              {hirePickerOpen && (
+                <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", width: 240, background: "var(--kz-bg)", borderRadius: 14, boxShadow: "0 16px 40px var(--kz-shadow)", padding: 6, display: "flex", flexDirection: "column", gap: 2, zIndex: 1 }}>
+                  <div style={{ padding: "8px 10px 4px", fontSize: 10, letterSpacing: "0.06em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>Which service?</div>
+                  {sellerGigs.map((g) => (
+                    <button
+                      key={g.id}
+                      onClick={() => hireNow(g.id)}
+                      style={{ display: "flex", flexDirection: "column", gap: 2, padding: "9px 10px", width: "100%", textAlign: "left", borderRadius: 9 }}
+                    >
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--kz-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{g.title}</span>
+                      <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "var(--kz-text-muted)" }}>UGX {g.price}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {!showingThread && (
