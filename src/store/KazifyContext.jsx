@@ -42,6 +42,7 @@ const initialState = {
   bootstrapped: false,
   inboxOpen: false,
   chatWith: null,
+  reviewPrompt: null,
 };
 
 export function KazifyProvider({ children }) {
@@ -502,9 +503,10 @@ export function KazifyProvider({ children }) {
   const approveOrder = useCallback(
     async (id) => {
       try {
-        await api.approveOrder(id);
+        const { sellerId, gigTitle } = await api.approveOrder(id);
         say("Approved — escrow released to the seller");
         refetchClientOrders();
+        setState((prev) => ({ ...prev, reviewPrompt: { orderId: id, sellerId, gigTitle } }));
       } catch (err) {
         say(err.message);
       }
@@ -523,6 +525,30 @@ export function KazifyProvider({ children }) {
       }
     },
     [say, refetchClientOrders]
+  );
+
+  // Opens the review prompt for an already-approved order that hasn't been
+  // rated yet — the "Rate seller" button on an order someone skipped rating
+  // for right after approving it.
+  const rateOrder = useCallback((order) => {
+    setState((prev) => ({ ...prev, reviewPrompt: { orderId: order.id, sellerId: order.sellerId, gigTitle: order.title } }));
+  }, []);
+
+  const closeReviewPrompt = useCallback(() => setState((prev) => ({ ...prev, reviewPrompt: null })), []);
+
+  const submitReview = useCallback(
+    async ({ orderId, sellerId, rating, comment }) => {
+      if (!me) return;
+      try {
+        await api.submitReview({ orderId, sellerId, clientId: me.id, rating, comment });
+        say("Thanks for the review");
+        setState((prev) => ({ ...prev, reviewPrompt: null }));
+        refetchClientOrders();
+      } catch (err) {
+        say(err.message || "Couldn't submit review — try again");
+      }
+    },
+    [me, say, refetchClientOrders]
   );
 
   const withdraw = useCallback(async () => {
@@ -689,6 +715,9 @@ export function KazifyProvider({ children }) {
       deliverOrder,
       approveOrder,
       disputeOrder,
+      rateOrder,
+      closeReviewPrompt,
+      submitReview,
       withdraw,
       submitKycNow,
       becomeSeller,
@@ -710,7 +739,7 @@ export function KazifyProvider({ children }) {
       availableBalance, escrowHeldSeller, escrowInFlightClient, notifications, payoutMethods,
       ordersSeller, swipe, editAuth, startAuth, closeAuth, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, signOut, patchMe, editDraft,
       openSettings, closeSettings, saveSettings, pickPhoto, removePhoto, togglePref, refreshKyc,
-      upload, createService, fund, acceptOrder, declineOrder, deliverOrder, approveOrder, disputeOrder, withdraw, submitKycNow, becomeSeller, openNotifFrom, chat,
+      upload, createService, fund, acceptOrder, declineOrder, deliverOrder, approveOrder, disputeOrder, rateOrder, closeReviewPrompt, submitReview, withdraw, submitKycNow, becomeSeller, openNotifFrom, chat,
       closeChat, openInbox, closeInbox, sendChatMessage, conversations, thread, threadBusy, cacheGigs,
     ]
   );

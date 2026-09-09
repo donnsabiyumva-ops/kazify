@@ -26,6 +26,7 @@ export default function AccountOverlay() {
     becomeSeller,
     approveOrder,
     disputeOrder,
+    rateOrder,
     fmt,
     accent,
     signOut,
@@ -176,6 +177,17 @@ export default function AccountOverlay() {
                       >
                         <Icon icon="badge-check" size={13} />
                         Approve & release
+                      </button>
+                    </div>
+                  )}
+                  {ct.rawStatus === "approved" && !ct.reviewed && (
+                    <div style={{ paddingLeft: 52 }}>
+                      <button
+                        onClick={() => rateOrder(ct)}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flex: "none", padding: "0 16px", height: 32, background: "var(--kz-surface-2)", borderRadius: 9, fontSize: 11.5, fontWeight: 700, color: "var(--kz-text-secondary)" }}
+                      >
+                        <Icon icon="star" size={13} />
+                        Rate seller
                       </button>
                     </div>
                   )}

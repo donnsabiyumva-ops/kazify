@@ -19,6 +19,7 @@ drop policy if exists "dev_allow_all_messages" on messages;
 drop policy if exists "dev_allow_all_notifications" on notifications;
 drop policy if exists "dev_allow_all_kyc_submissions" on kyc_submissions;
 drop policy if exists "dev_allow_all_payouts" on payouts;
+drop policy if exists "dev_allow_all_reviews" on reviews;
 
 -- profiles: anyone can read (handles/ratings are public); only the owner can write
 create policy "profiles_select_all" on profiles for select using (true);
@@ -74,3 +75,8 @@ create policy "kyc_owner_insert" on kyc_submissions for insert with check (auth.
 -- payouts: owner only, read-only from the client (writes happen via
 -- service-role from escrow-release/withdrawal server logic)
 create policy "payouts_owner_select" on payouts for select using (auth.uid() = profile_id);
+
+-- reviews: public read (they're what "seller rating" is built from); only
+-- the order's client can leave one, once
+create policy "reviews_select_all" on reviews for select using (true);
+create policy "reviews_client_insert" on reviews for insert with check (auth.uid() = client_id);

@@ -13,6 +13,7 @@ import MessagesOverlay from "./components/MessagesOverlay.jsx";
 import CheckoutModal from "./components/CheckoutModal.jsx";
 import KycModal from "./components/KycModal.jsx";
 import UploadServiceModal from "./components/UploadServiceModal.jsx";
+import ReviewModal from "./components/ReviewModal.jsx";
 
 function Shell() {
   const { state, me } = useKazify();
@@ -48,6 +49,7 @@ function Shell() {
       <CheckoutModal />
       <KycModal />
       <UploadServiceModal />
+      <ReviewModal />
       <Toast />
     </div>
   );

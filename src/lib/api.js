@@ -314,14 +314,16 @@ const CONTRACT_STATUS = {
 export async function getOrdersForClient(clientId) {
   const { data, error } = await supabase
     .from("orders")
-    .select("*, seller:profiles!orders_seller_id_fkey(handle), gig:gigs(title)")
+    .select("*, seller:profiles!orders_seller_id_fkey(handle), gig:gigs(title), reviews(id)")
     .eq("client_id", clientId)
     .order("created_at", { ascending: false });
   if (error) fail("getOrdersForClient", error);
   return (data ?? []).map((row) => ({
     id: row.id,
+    sellerId: row.seller_id,
     handle: row.seller?.handle ?? "@unknown",
     title: row.gig?.title ?? "",
+    reviewed: (row.reviews ?? []).length > 0,
     price: fmt(row.amount),
     status: CONTRACT_STATUS[row.status]?.label ?? row.status,
     rawStatus: row.status,
@@ -400,7 +402,8 @@ async function releaseEscrow(orderId) {
   if (payoutError) fail("releaseEscrow", payoutError);
 }
 
-// The client explicitly approving a delivered order.
+// The client explicitly approving a delivered order. Returns who to prompt
+// a review for, so the caller can pop that up right away.
 export async function approveOrder(orderId) {
   await releaseEscrow(orderId);
 
@@ -412,11 +415,29 @@ export async function approveOrder(orderId) {
     title: `Approved: ${order.gig?.title ?? "your order"} — escrow released to your balance`,
     payload: { order_id: orderId },
   });
+
+  return { sellerId: order.seller_id, gigTitle: order.gig?.title ?? "" };
 }
 
 export async function disputeOrder(orderId) {
   const { error } = await supabase.from("orders").update({ status: "disputed" }).eq("id", orderId);
   if (error) fail("disputeOrder", error);
+}
+
+// ---------------------------------------------------------------------
+// reviews — profiles.rating is recomputed by a db trigger on write, not
+// here, so it stays correct regardless of which session writes a review.
+// ---------------------------------------------------------------------
+
+export async function submitReview({ orderId, sellerId, clientId, rating, comment }) {
+  const { error } = await supabase.from("reviews").insert({
+    order_id: orderId,
+    seller_id: sellerId,
+    client_id: clientId,
+    rating,
+    comment: comment?.trim() || null,
+  });
+  if (error) fail("submitReview", error);
 }
 
 // ---------------------------------------------------------------------
