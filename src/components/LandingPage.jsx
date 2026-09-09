@@ -57,7 +57,7 @@ export default function LandingPage() {
   useEffect(() => {
     let cancelled = false;
     api
-      .getFeaturedGigs(12)
+      .getFeaturedGigs(4)
       .then((rows) => {
         if (!cancelled) setFeatured(rows);
       })

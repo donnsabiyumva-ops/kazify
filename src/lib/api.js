@@ -165,10 +165,18 @@ export async function getFeed(clientId, { query, categories } = {}) {
   return (data ?? []).map(mapGigRow);
 }
 
-// Small public preview for the landing page — no client session needed,
-// so there's nothing to exclude.
+// Small public preview for the landing page — no client session needed.
+// Restricted to the curated is_demo showcase sellers only: this is public,
+// pre-signup marketing surface, not a place for whatever a real user last
+// uploaded to leak out to.
 export async function getFeaturedGigs(limit = 6) {
-  const { data, error } = await supabase.from("gigs").select(GIG_SELECT).eq("status", "active").order("created_at", { ascending: false }).limit(limit);
+  const { data, error } = await supabase
+    .from("gigs")
+    .select("*, seller:profiles!gigs_seller_id_fkey!inner(handle, rating, is_demo), category:categories(name)")
+    .eq("status", "active")
+    .eq("seller.is_demo", true)
+    .order("created_at", { ascending: false })
+    .limit(limit);
   if (error) fail("getFeaturedGigs", error);
   return (data ?? []).map(mapGigRow);
 }
