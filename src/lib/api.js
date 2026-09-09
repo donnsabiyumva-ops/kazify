@@ -310,6 +310,7 @@ export async function getOrdersForClient(clientId) {
     .order("created_at", { ascending: false });
   if (error) fail("getOrdersForClient", error);
   return (data ?? []).map((row) => ({
+    id: row.id,
     handle: row.seller?.handle ?? "@unknown",
     title: row.gig?.title ?? "",
     price: fmt(row.amount),
@@ -344,13 +345,69 @@ export async function deliverOrder(orderId) {
     .single();
   if (error) fail("deliverOrder", error);
 
+  const { data: client } = await supabase.from("profiles").select("auto_release_escrow").eq("id", data.client_id).maybeSingle();
+
+  if (client?.auto_release_escrow) {
+    await releaseEscrow(orderId);
+    await supabase.from("notifications").insert({
+      profile_id: data.client_id,
+      role_context: "hiring",
+      kind: "delivery_ready",
+      title: `Delivered & auto-approved: ${data.gig?.title ?? "your order"} — escrow released`,
+      payload: { order_id: orderId },
+    });
+  } else {
+    await supabase.from("notifications").insert({
+      profile_id: data.client_id,
+      role_context: "hiring",
+      kind: "delivery_ready",
+      title: `Delivered: ${data.gig?.title ?? "your order"} — approve to release escrow`,
+      payload: { order_id: orderId },
+    });
+  }
+}
+
+// Marks an order approved, releases its held escrow, and credits the
+// seller's ledger — shared by an explicit client approval and by
+// deliverOrder's auto-release path (client's "auto-release on approval"
+// preference).
+async function releaseEscrow(orderId) {
+  const { data: order, error: fetchError } = await supabase.from("orders").select("seller_id, amount").eq("id", orderId).single();
+  if (fetchError) fail("releaseEscrow", fetchError);
+
+  const { error } = await supabase
+    .from("orders")
+    .update({ status: "approved", approved_at: new Date().toISOString(), escrow_status: "released" })
+    .eq("id", orderId);
+  if (error) fail("releaseEscrow", error);
+
+  const { error: payoutError } = await supabase.from("payouts").insert({
+    profile_id: order.seller_id,
+    order_id: orderId,
+    kind: "escrow_release",
+    amount: Number(order.amount),
+    channel: "Kazify escrow",
+  });
+  if (payoutError) fail("releaseEscrow", payoutError);
+}
+
+// The client explicitly approving a delivered order.
+export async function approveOrder(orderId) {
+  await releaseEscrow(orderId);
+
+  const { data: order } = await supabase.from("orders").select("seller_id, gig:gigs(title)").eq("id", orderId).maybeSingle();
   await supabase.from("notifications").insert({
-    profile_id: data.client_id,
-    role_context: "hiring",
-    kind: "delivery_ready",
-    title: `Delivered: ${data.gig?.title ?? "your order"} — approve to release escrow`,
+    profile_id: order.seller_id,
+    role_context: "selling",
+    kind: "escrow_released",
+    title: `Approved: ${order.gig?.title ?? "your order"} — escrow released to your balance`,
     payload: { order_id: orderId },
   });
+}
+
+export async function disputeOrder(orderId) {
+  const { error } = await supabase.from("orders").update({ status: "disputed" }).eq("id", orderId);
+  if (error) fail("disputeOrder", error);
 }
 
 // ---------------------------------------------------------------------
@@ -525,7 +582,7 @@ export async function getNotifications(profileId) {
     role: n.role_context === "selling" ? "freelancer" : "client",
     tag: n.role_context === "selling" ? "Selling" : "Hiring",
     tab: n.role_context === "selling" ? "Orders" : null,
-    icon: { order_new: "inbox", delivery_ready: "package-check", message: "message-circle" }[n.kind] ?? "bell",
+    icon: { order_new: "inbox", delivery_ready: "package-check", escrow_released: "wallet", message: "message-circle" }[n.kind] ?? "bell",
     title: n.title,
     when: fmtRelative(n.created_at),
   }));

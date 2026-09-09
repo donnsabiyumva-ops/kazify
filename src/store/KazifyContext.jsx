@@ -482,9 +482,47 @@ export function KazifyProvider({ children }) {
       await api.deliverOrder(id);
       say("Delivery sent for approval");
       refetchSellerOrders();
-      if (me) setEscrowHeldSeller(await api.getEscrowHeld(me.id));
+      if (me) {
+        // covers the auto-release case too (buyer has auto-release on, so
+        // deliverOrder may have already paid out the seller)
+        setEscrowHeldSeller(await api.getEscrowHeld(me.id));
+        setPayouts(await api.getPayouts(me.id));
+        setAvailableBalance(await api.getAvailableBalance(me.id));
+      }
     },
     [say, refetchSellerOrders, me]
+  );
+
+  const refetchClientOrders = useCallback(async () => {
+    if (!me) return;
+    setOrdersClient(await api.getOrdersForClient(me.id));
+    setEscrowInFlightClient(await api.getEscrowInFlight(me.id));
+  }, [me]);
+
+  const approveOrder = useCallback(
+    async (id) => {
+      try {
+        await api.approveOrder(id);
+        say("Approved — escrow released to the seller");
+        refetchClientOrders();
+      } catch (err) {
+        say(err.message);
+      }
+    },
+    [say, refetchClientOrders]
+  );
+
+  const disputeOrder = useCallback(
+    async (id) => {
+      try {
+        await api.disputeOrder(id);
+        say("Order marked as disputed");
+        refetchClientOrders();
+      } catch (err) {
+        say(err.message);
+      }
+    },
+    [say, refetchClientOrders]
   );
 
   const withdraw = useCallback(async () => {
@@ -646,6 +684,8 @@ export function KazifyProvider({ children }) {
       acceptOrder,
       declineOrder,
       deliverOrder,
+      approveOrder,
+      disputeOrder,
       withdraw,
       submitKycNow,
       becomeSeller,
@@ -666,7 +706,7 @@ export function KazifyProvider({ children }) {
       availableBalance, escrowHeldSeller, escrowInFlightClient, notifications, payoutMethods,
       ordersSeller, swipe, editAuth, startAuth, closeAuth, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, signOut, patchMe, editDraft,
       openSettings, closeSettings, saveSettings, pickPhoto, removePhoto, togglePref, refreshKyc,
-      upload, createService, fund, acceptOrder, declineOrder, deliverOrder, withdraw, submitKycNow, becomeSeller, openNotifFrom, chat,
+      upload, createService, fund, acceptOrder, declineOrder, deliverOrder, approveOrder, disputeOrder, withdraw, submitKycNow, becomeSeller, openNotifFrom, chat,
       closeChat, openInbox, closeInbox, sendChatMessage, conversations, thread, threadBusy,
     ]
   );

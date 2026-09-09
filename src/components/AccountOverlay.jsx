@@ -24,6 +24,8 @@ export default function AccountOverlay() {
     queueCount,
     togglePref,
     becomeSeller,
+    approveOrder,
+    disputeOrder,
     fmt,
     accent,
     signOut,
@@ -149,15 +151,34 @@ export default function AccountOverlay() {
               {ordersClient.length === 0 && (
                 <div style={{ padding: "12px 4px", fontSize: 12, color: "var(--kz-text-faint)" }}>No hires yet — shortlist a service and hire to see it here.</div>
               )}
-              {ordersClient.map((ct, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 4px" }}>
-                  <div style={{ width: 38, height: 52, borderRadius: 9, flex: "none", background: "repeating-linear-gradient(115deg,#0f172a 0 7px,#1e293b 7px 14px)" }} />
-                  <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
-                    <span style={{ fontSize: 12.5, fontWeight: 700 }}>{ct.handle}</span>
-                    <span style={{ fontSize: 11.5, color: "var(--kz-text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ct.title}</span>
+              {ordersClient.map((ct) => (
+                <div key={ct.id} style={{ display: "flex", flexDirection: "column", gap: 10, padding: "12px 4px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ width: 38, height: 52, borderRadius: 9, flex: "none", background: "repeating-linear-gradient(115deg,#0f172a 0 7px,#1e293b 7px 14px)" }} />
+                    <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
+                      <span style={{ fontSize: 12.5, fontWeight: 700 }}>{ct.handle}</span>
+                      <span style={{ fontSize: 11.5, color: "var(--kz-text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ct.title}</span>
+                    </div>
+                    <span style={{ flex: "none", padding: "5px 10px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.02em", ...toneStyle[ct.tone] }}>{ct.status}</span>
+                    <span style={{ flex: "none", fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: "var(--kz-text)" }}>UGX {ct.price}</span>
                   </div>
-                  <span style={{ flex: "none", padding: "5px 10px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.02em", ...toneStyle[ct.tone] }}>{ct.status}</span>
-                  <span style={{ flex: "none", fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: "var(--kz-text)" }}>UGX {ct.price}</span>
+                  {ct.rawStatus === "delivered" && (
+                    <div style={{ display: "flex", gap: 8, paddingLeft: 52 }}>
+                      <button
+                        onClick={() => disputeOrder(ct.id)}
+                        style={{ flex: "none", padding: "0 14px", height: 32, background: "var(--kz-surface-2)", borderRadius: 9, fontSize: 11.5, fontWeight: 700, color: "var(--kz-text-secondary)" }}
+                      >
+                        Dispute
+                      </button>
+                      <button
+                        onClick={() => approveOrder(ct.id)}
+                        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flex: "none", padding: "0 16px", height: 32, background: accent, borderRadius: 9, fontSize: 11.5, fontWeight: 700, color: "#fff" }}
+                      >
+                        <Icon icon="badge-check" size={13} />
+                        Approve & release
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

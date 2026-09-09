@@ -6,8 +6,10 @@ const pillStyle = {
   new: { background: "#fef3c7", color: "#92400e" },
   active: { background: "var(--kz-accent-soft)", color: "var(--kz-accent-text)" },
   delivered: { background: "var(--kz-surface-2)", color: "var(--kz-text-secondary)" },
+  approved: { background: "var(--kz-accent-soft)", color: "var(--kz-accent-text)" },
+  disputed: { background: "#fee2e2", color: "#b91c1c" },
 };
-const statusLabel = { new: "New request", active: "In progress", delivered: "Delivered" };
+const statusLabel = { new: "New request", active: "In progress", delivered: "Delivered", approved: "Approved · paid", disputed: "Disputed" };
 
 export default function SellerOrders() {
   const { setState, queue, acceptOrder, declineOrder, deliverOrder, accent } = useKazify();
