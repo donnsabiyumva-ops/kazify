@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
 import Icon from "./Icon.jsx";
+import LegalModal from "./LegalModal.jsx";
 import { useKazify } from "../store/KazifyContext.jsx";
 import * as api from "../lib/api.js";
+
+const legalLinks = [
+  { label: "Terms of Service", doc: "terms" },
+  { label: "Privacy Policy", doc: "privacy" },
+];
 
 const navLinks = [
   { label: "How it works", href: "#how-it-works" },
@@ -38,6 +44,7 @@ export default function LandingPage() {
   const { startAuth, accent } = useKazify();
   const [featured, setFeatured] = useState([]);
   const [scrolled, setScrolled] = useState(false);
+  const [legalDoc, setLegalDoc] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -305,7 +312,7 @@ export default function LandingPage() {
       {/* ---------------------------------------------------------------- */}
       {/* footer                                                            */}
       {/* ---------------------------------------------------------------- */}
-      <footer style={{ borderTop: "1px solid var(--kz-border)", padding: "40px 24px 56px" }}>
+      <footer style={{ borderTop: "1px solid var(--kz-border)", padding: "40px 24px 28px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: 28, alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.8px" }}>
@@ -322,7 +329,26 @@ export default function LandingPage() {
           </nav>
           <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "var(--kz-text-faint)" }}>© {new Date().getFullYear()} Kazify</span>
         </div>
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: "24px auto 0",
+            paddingTop: 20,
+            borderTop: "1px solid var(--kz-border)",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 20,
+          }}
+        >
+          {legalLinks.map((l) => (
+            <button key={l.doc} onClick={() => setLegalDoc(l.doc)} className="kz-link" style={{ fontSize: 12, fontWeight: 600, color: "var(--kz-text-faint)" }}>
+              {l.label}
+            </button>
+          ))}
+        </div>
       </footer>
+
+      <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} />
     </div>
   );
 }
