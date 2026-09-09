@@ -4,9 +4,17 @@ import LegalModal from "./LegalModal.jsx";
 import { useKazify } from "../store/KazifyContext.jsx";
 import * as api from "../lib/api.js";
 
-const legalLinks = [
+const footerInfoLinks = [
+  { label: "About", doc: "about" },
+  { label: "FAQ", doc: "faq" },
+  { label: "Contact", doc: "contact" },
   { label: "Terms of Service", doc: "terms" },
   { label: "Privacy Policy", doc: "privacy" },
+];
+
+const socialLinks = [
+  { label: "Instagram", href: "https://instagram.com/kazifyafrica", icon: "instagram" },
+  { label: "TikTok", href: "https://www.tiktok.com/@kazifyafrica", icon: "tiktok" },
 ];
 
 const navLinks = [
@@ -338,13 +346,32 @@ export default function LandingPage() {
             display: "flex",
             flexWrap: "wrap",
             gap: 20,
+            alignItems: "center",
+            justifyContent: "space-between",
           }}
         >
-          {legalLinks.map((l) => (
-            <button key={l.doc} onClick={() => setLegalDoc(l.doc)} className="kz-link" style={{ fontSize: 12, fontWeight: 600, color: "var(--kz-text-faint)" }}>
-              {l.label}
-            </button>
-          ))}
+          <nav style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+            {footerInfoLinks.map((l) => (
+              <button key={l.doc} onClick={() => setLegalDoc(l.doc)} className="kz-link" style={{ fontSize: 12, fontWeight: 600, color: "var(--kz-text-faint)" }}>
+                {l.label}
+              </button>
+            ))}
+          </nav>
+          <div style={{ display: "flex", gap: 14 }}>
+            {socialLinks.map((s) => (
+              <a
+                key={s.href}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`${s.label} · @kazifyafrica`}
+                className="kz-link"
+                style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: 9, background: "var(--kz-surface-2)", color: "var(--kz-text-secondary)" }}
+              >
+                <Icon icon={s.icon} size={15} />
+              </a>
+            ))}
+          </div>
         </div>
       </footer>
 

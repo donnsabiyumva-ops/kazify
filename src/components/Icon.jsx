@@ -62,7 +62,29 @@ import {
   Zap,
 } from "lucide-react";
 
+// lucide-react doesn't ship brand/social marks — hand-drawn here so the
+// footer's Instagram/TikTok links don't need a second icon library.
+function InstagramIcon({ size = 16, style, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" style={style} className={className}>
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
+
+function TikTokIcon({ size = 16, style, className }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" style={style} className={className}>
+      <path d="M16.5 2c.3 1.9 1.5 3.5 3.3 4.2.6.3 1.3.4 2 .5v3.2c-1.8-.1-3.5-.6-5-1.6v6.5c0 3.4-2.8 6.2-6.2 6.2S4.4 18.2 4.4 14.8c0-3.4 2.8-6.2 6.2-6.2.3 0 .6 0 .9.1v3.3c-.3-.1-.6-.1-.9-.1a2.9 2.9 0 1 0 2.9 2.9V2h3z" />
+    </svg>
+  );
+}
+
 const registry = {
+  instagram: InstagramIcon,
+  tiktok: TikTokIcon,
   "arrow-down-left": ArrowDownLeft,
   "arrow-down-to-line": ArrowDownToLine,
   "arrow-right": ArrowRight,

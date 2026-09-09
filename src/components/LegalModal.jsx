@@ -116,7 +116,88 @@ const docs = {
       </>
     ),
   },
+  about: {
+    title: "About Kazify",
+    body: (
+      <>
+        <div style={SECTION}>
+          <span style={H}>Why Kazify exists</span>
+          <span style={P}>
+            There's no shortage of talent in Uganda — only a shortage of ways to be found. Editors, photographers, designers, MCs and developers finish school with real skill and no way to
+            prove it to anyone hiring. Kazify replaces the CV with the work itself: a short video, a fixed price, a delivery date. Clients see exactly what they're paying for, and young people
+            get paid for what they can already do.
+          </span>
+        </div>
+        <div style={SECTION}>
+          <span style={H}>How it's different</span>
+          <span style={P}>
+            No agencies, no cold outreach, no unpaid "trial work." A creator posts a service, a client hires it through escrow, and payment only moves once the client approves what was
+            delivered. Verification is required to withdraw earnings, not to start selling — so getting listed is never the bottleneck.
+          </span>
+        </div>
+        <div style={SECTION}>
+          <span style={H}>Where we're at</span>
+          <span style={P}>
+            Kazify is early — built and run out of Uganda, growing one creator and one hire at a time. If you're building something and want to see how it works, the fastest way is to sign up
+            and swipe the deck.
+          </span>
+        </div>
+      </>
+    ),
+  },
+  faq: {
+    title: "Frequently Asked Questions",
+    body: (
+      <>
+        <div style={SECTION}>
+          <span style={H}>How does escrow actually work?</span>
+          <span style={P}>
+            When you hire someone, your payment moves into escrow immediately — the creator doesn't get paid yet, but they can see the order is funded. Once they deliver and you approve, the
+            funds release to their Mobile Money. If you never approve, the money stays held rather than going anywhere.
+          </span>
+        </div>
+        <div style={SECTION}>
+          <span style={H}>What if I'm not happy with the delivery?</span>
+          <span style={P}>
+            Mark the order disputed instead of approving it. Escrow stays protected — nothing releases until it's sorted out.
+          </span>
+        </div>
+        <div style={SECTION}>
+          <span style={H}>Do I have to talk to a creator before hiring them?</span>
+          <span style={P}>
+            Yes — hiring happens inside a chat with the creator. The Hire Now button only unlocks once they've actually replied, so you're never checking out cold.
+          </span>
+        </div>
+        <div style={SECTION}>
+          <span style={H}>How do creators get paid?</span>
+          <span style={P}>
+            Straight to MTN or Airtel Mobile Money once an order's escrow is released. A creator can post services and take orders right away — ID verification is only required before their
+            first withdrawal.
+          </span>
+        </div>
+        <div style={SECTION}>
+          <span style={H}>Is my ID document safe?</span>
+          <span style={P}>
+            It's used only to verify you for payouts and is never shown to clients or other creators.
+          </span>
+        </div>
+      </>
+    ),
+  },
+  contact: {
+    title: "Contact",
+    body: (
+      <div style={SECTION}>
+        <span style={P}>
+          Kazify doesn't have a support inbox set up yet — for now, the fastest way to reach us is Instagram or TikTok, both{" "}
+          <strong style={{ color: "var(--kz-text)" }}>@kazifyafrica</strong>. Send a DM and we'll get back to you.
+        </span>
+      </div>
+    ),
+  },
 };
+
+const LEGAL_DOCS = new Set(["terms", "privacy"]);
 
 export default function LegalModal({ doc, onClose }) {
   const d = doc ? docs[doc] : null;
@@ -142,10 +223,12 @@ export default function LegalModal({ doc, onClose }) {
         </div>
 
         <div style={{ padding: "4px 22px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
-          <div style={{ display: "flex", gap: 8, padding: "10px 12px", background: "#fef3c7", borderRadius: 10, fontSize: 11, color: "#92400e", lineHeight: 1.5 }}>
-            <Icon icon="shield-alert" size={14} style={{ flex: "none", marginTop: 1 }} />
-            <span>Draft template for a platform still in development — not reviewed by a lawyer. Have this checked before real users transact real money on Kazify.</span>
-          </div>
+          {LEGAL_DOCS.has(doc) && (
+            <div style={{ display: "flex", gap: 8, padding: "10px 12px", background: "#fef3c7", borderRadius: 10, fontSize: 11, color: "#92400e", lineHeight: 1.5 }}>
+              <Icon icon="shield-alert" size={14} style={{ flex: "none", marginTop: 1 }} />
+              <span>Draft template for a platform still in development — not reviewed by a lawyer. Have this checked before real users transact real money on Kazify.</span>
+            </div>
+          )}
           {d.body}
         </div>
       </div>
