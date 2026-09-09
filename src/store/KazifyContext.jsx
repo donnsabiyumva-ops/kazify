@@ -40,6 +40,8 @@ const initialState = {
   auth: null,
   authBusy: false,
   bootstrapped: false,
+  inboxOpen: false,
+  chatWith: null,
 };
 
 export function KazifyProvider({ children }) {
@@ -57,6 +59,9 @@ export function KazifyProvider({ children }) {
   const [escrowInFlightClient, setEscrowInFlightClient] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [payoutMethods, setPayoutMethods] = useState([]);
+  const [conversations, setConversations] = useState([]);
+  const [thread, setThread] = useState([]);
+  const [threadBusy, setThreadBusy] = useState(false);
   const gigsById = useRef(new Map());
   const toastTimer = useRef(null);
 
@@ -537,7 +542,60 @@ export function KazifyProvider({ children }) {
     setState((prev) => ({ ...prev, role: n.role, notifOpen: false, userOpen: false, sellerTab: n.tab || prev.sellerTab }));
   }, []);
 
-  const chat = useCallback((handle) => say("Message drafted to " + handle), [say]);
+  // Opens a direct chat with another profile — from a "Chat" button (leaves
+  // the inbox list closed) or from picking a conversation in the inbox
+  // (inboxOpen stays true underneath, so "back" returns to the list).
+  const chat = useCallback(
+    (otherId, handle) => {
+      if (!me || otherId === me.id) return;
+      setState((prev) => ({ ...prev, chatWith: { id: otherId, handle } }));
+    },
+    [me]
+  );
+
+  const closeChat = useCallback(() => setState((prev) => ({ ...prev, chatWith: null })), []);
+
+  const openInbox = useCallback(async () => {
+    if (!me) return;
+    setState((prev) => ({ ...prev, inboxOpen: true, chatWith: null }));
+    setConversations(await api.getConversations(me.id));
+  }, [me]);
+
+  const closeInbox = useCallback(() => setState((prev) => ({ ...prev, inboxOpen: false, chatWith: null })), []);
+
+  useEffect(() => {
+    if (!me || !state.chatWith) {
+      setThread([]);
+      return;
+    }
+    let cancelled = false;
+    setThreadBusy(true);
+    api
+      .getThread(me.id, state.chatWith.id)
+      .then((rows) => {
+        if (!cancelled) setThread(rows);
+      })
+      .finally(() => {
+        if (!cancelled) setThreadBusy(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [me, state.chatWith]);
+
+  const sendChatMessage = useCallback(
+    async (body) => {
+      const text = body.trim();
+      if (!me || !state.chatWith || !text) return;
+      try {
+        const msg = await api.sendMessage({ senderId: me.id, recipientId: state.chatWith.id, body: text });
+        setThread((prev) => prev.concat(msg));
+      } catch (err) {
+        say(err.message || "Message failed to send — try again");
+      }
+    },
+    [me, state.chatWith, say]
+  );
 
   const queue = ordersSeller;
 
@@ -593,6 +651,13 @@ export function KazifyProvider({ children }) {
       becomeSeller,
       openNotifFrom,
       chat,
+      closeChat,
+      openInbox,
+      closeInbox,
+      sendChatMessage,
+      conversations,
+      thread,
+      threadBusy,
       getCachedGig: (id) => gigsById.current.get(id),
       gigs: feed.concat(binder).concat(Array.from(gigsById.current.values())).filter((g, i, arr) => arr.findIndex((x) => x.id === g.id) === i),
     }),
@@ -602,6 +667,7 @@ export function KazifyProvider({ children }) {
       ordersSeller, swipe, editAuth, startAuth, closeAuth, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, signOut, patchMe, editDraft,
       openSettings, closeSettings, saveSettings, pickPhoto, removePhoto, togglePref, refreshKyc,
       upload, createService, fund, acceptOrder, declineOrder, deliverOrder, withdraw, submitKycNow, becomeSeller, openNotifFrom, chat,
+      closeChat, openInbox, closeInbox, sendChatMessage, conversations, thread, threadBusy,
     ]
   );
 

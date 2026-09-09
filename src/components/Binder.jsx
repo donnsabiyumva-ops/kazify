@@ -46,7 +46,7 @@ export default function Binder() {
               ) : (
                 <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
                   <button
-                    onClick={() => chat(b.handle)}
+                    onClick={() => chat(b.sellerId, b.handle)}
                     title="Message creator"
                     style={{ flex: "none", width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--kz-surface-2)", border: "none", borderRadius: 8, color: "var(--kz-text-secondary)" }}
                   >

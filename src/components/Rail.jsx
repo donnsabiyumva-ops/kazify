@@ -4,7 +4,7 @@ import { useKazify } from "../store/KazifyContext.jsx";
 import { cats, catIcons, sellerNav, rolesDefs } from "../data/seed.js";
 
 export default function Rail() {
-  const { state, setState, me, notifs, openNotifFrom, escrowInFlightClient, fmt, accent } = useKazify();
+  const { state, setState, me, notifs, openNotifFrom, openInbox, escrowInFlightClient, fmt, accent } = useKazify();
   const [hover, setHover] = useState(false);
   const open = state.railPinned || hover;
   const seller = state.role === "freelancer";
@@ -80,6 +80,23 @@ export default function Rail() {
           <div style={{ display: open ? "flex" : "none", flex: 1, minWidth: 0, alignItems: "center" }}>
             <span style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.4px", whiteSpace: "nowrap" }}>Kazify</span>
           </div>
+          <button
+            onClick={openInbox}
+            title="Messages"
+            style={{
+              flex: "none",
+              width: 26,
+              height: 26,
+              borderRadius: 8,
+              display: open ? "flex" : "none",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "var(--kz-surface-2)",
+              color: "var(--kz-text-muted)",
+            }}
+          >
+            <Icon icon="message-circle" size={16} />
+          </button>
           <button
             onClick={() => setState((p) => ({ notifOpen: !p.notifOpen, railPinned: true }))}
             title="Notifications"

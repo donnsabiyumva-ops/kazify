@@ -9,6 +9,7 @@ import SettingsModal from "./components/SettingsModal.jsx";
 import Toast from "./components/Toast.jsx";
 import AccountOverlay from "./components/AccountOverlay.jsx";
 import CreatorProfileOverlay from "./components/CreatorProfileOverlay.jsx";
+import MessagesOverlay from "./components/MessagesOverlay.jsx";
 import CheckoutModal from "./components/CheckoutModal.jsx";
 import KycModal from "./components/KycModal.jsx";
 import UploadServiceModal from "./components/UploadServiceModal.jsx";
@@ -43,6 +44,7 @@ function Shell() {
       <SettingsModal />
       <AccountOverlay />
       <CreatorProfileOverlay />
+      <MessagesOverlay />
       <CheckoutModal />
       <KycModal />
       <UploadServiceModal />

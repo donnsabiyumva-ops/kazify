@@ -269,6 +269,19 @@ function mapOrderRow(row) {
   };
 }
 
+// Public trust stats for a seller's profile — completed-order count and
+// on-time-delivery rate, computed from real orders rather than shown
+// as a placeholder.
+export async function getSellerStats(sellerId) {
+  const { data, error } = await supabase.from("orders").select("status, due_at, delivered_at").eq("seller_id", sellerId).in("status", ["approved", "delivered"]);
+  if (error) fail("getSellerStats", error);
+  const rows = data ?? [];
+  const done = rows.filter((r) => r.status === "approved").length;
+  const withDueDate = rows.filter((r) => r.delivered_at && r.due_at);
+  const onTimeCount = withDueDate.filter((r) => new Date(r.delivered_at) <= new Date(r.due_at + "T23:59:59")).length;
+  return { done, onTime: withDueDate.length ? Math.round((onTimeCount / withDueDate.length) * 100) + "%" : "—" };
+}
+
 export async function getOrdersForSeller(sellerId) {
   const { data, error } = await supabase
     .from("orders")
@@ -432,6 +445,72 @@ export async function getEscrowHeld(sellerId) {
 export async function withdraw(profileId, amount, channel) {
   const { error } = await supabase.from("payouts").insert({ profile_id: profileId, kind: "withdrawal", amount: -amount, channel });
   if (error) fail("withdraw", error);
+}
+
+// ---------------------------------------------------------------------
+// messages: direct chat between a client and a seller
+// ---------------------------------------------------------------------
+
+function mapMessageRow(row) {
+  return {
+    id: row.id,
+    senderId: row.sender_id,
+    recipientId: row.recipient_id,
+    body: row.body,
+    createdAt: row.created_at,
+  };
+}
+
+export async function getThread(meId, otherId) {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*")
+    .or(`and(sender_id.eq.${meId},recipient_id.eq.${otherId}),and(sender_id.eq.${otherId},recipient_id.eq.${meId})`)
+    .order("created_at", { ascending: true });
+  if (error) fail("getThread", error);
+  return (data ?? []).map(mapMessageRow);
+}
+
+export async function sendMessage({ senderId, recipientId, body }) {
+  const { data, error } = await supabase.from("messages").insert({ sender_id: senderId, recipient_id: recipientId, body }).select().single();
+  if (error) fail("sendMessage", error);
+
+  await supabase.from("notifications").insert({
+    profile_id: recipientId,
+    role_context: "hiring",
+    kind: "message",
+    title: "New message",
+    payload: { sender_id: senderId },
+  });
+
+  return mapMessageRow(data);
+}
+
+// One row per counterpart, newest message first — built client-side since
+// there's no reason to add a db view for a thread list this small.
+export async function getConversations(meId) {
+  const { data, error } = await supabase
+    .from("messages")
+    .select("*, sender:profiles!messages_sender_id_fkey(handle, photo_url), recipient:profiles!messages_recipient_id_fkey(handle, photo_url)")
+    .or(`sender_id.eq.${meId},recipient_id.eq.${meId}`)
+    .order("created_at", { ascending: false });
+  if (error) fail("getConversations", error);
+
+  const seen = new Map();
+  for (const row of data ?? []) {
+    const otherId = row.sender_id === meId ? row.recipient_id : row.sender_id;
+    if (seen.has(otherId)) continue;
+    const other = row.sender_id === meId ? row.recipient : row.sender;
+    seen.set(otherId, {
+      id: otherId,
+      handle: other?.handle ?? "@unknown",
+      photoUrl: other?.photo_url ?? null,
+      lastMessage: row.body,
+      lastAt: fmtRelative(row.created_at),
+      mine: row.sender_id === meId,
+    });
+  }
+  return Array.from(seen.values());
 }
 
 // ---------------------------------------------------------------------

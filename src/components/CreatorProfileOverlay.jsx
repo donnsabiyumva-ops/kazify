@@ -4,23 +4,21 @@ import ReelPlayer from "./ReelPlayer.jsx";
 import { useKazify } from "../store/KazifyContext.jsx";
 import * as api from "../lib/api.js";
 
-function seedFromId(id) {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return h % 8;
-}
-
 export default function CreatorProfileOverlay() {
   const { state, setState, gigs, accent, chat } = useKazify();
   const pg = state.profileId ? gigs.find((g) => g.id === state.profileId) : null;
   const [reels, setReels] = useState([]);
   const [openReel, setOpenReel] = useState(null);
+  const [stats, setStats] = useState({ done: 0, onTime: "—" });
 
   useEffect(() => {
     if (!pg) return;
     let cancelled = false;
     api.getReelsForSeller(pg.sellerId).then((rows) => {
       if (!cancelled) setReels(rows);
+    });
+    api.getSellerStats(pg.sellerId).then((s) => {
+      if (!cancelled) setStats(s);
     });
     return () => {
       cancelled = true;
@@ -30,14 +28,13 @@ export default function CreatorProfileOverlay() {
 
   if (!pg) return null;
 
-  const seed = seedFromId(pg.id);
   const profile = {
     handle: pg.handle,
     rating: pg.rating,
     initials: pg.handle.replace("@", "").slice(0, 2).toUpperCase(),
     bio: pg.category + " specialist · " + pg.delivery + "-day max delivery · Kampala time zone. Fixed-price gigs, escrow protected.",
-    orders: 40 + seed * 17,
-    onTime: (96 + (seed % 4)) + "%",
+    orders: stats.done,
+    onTime: stats.onTime,
   };
 
   const catalogue = reels.map((r, i) => ({
@@ -96,7 +93,7 @@ export default function CreatorProfileOverlay() {
           {!pg.isDemo && (
             <div style={{ display: "flex", gap: 10, flex: "none" }}>
               <button
-                onClick={() => chat(pg.handle)}
+                onClick={() => chat(pg.sellerId, pg.handle)}
                 style={{ padding: "12px 20px", background: "var(--kz-surface-2)", borderRadius: 12, fontSize: 13, fontWeight: 700, color: "var(--kz-text-secondary)", display: "flex", alignItems: "center", gap: 7 }}
               >
                 <Icon icon="message-circle" size={15} />
