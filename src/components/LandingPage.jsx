@@ -65,7 +65,7 @@ export default function LandingPage() {
   const reels = showcase.slice(0, 4);
 
   return (
-    <div style={{ background: "#ffffff", color: "#0f172a", scrollBehavior: "smooth" }}>
+    <div style={{ background: "var(--kz-bg)", color: "var(--kz-text)", scrollBehavior: "smooth" }}>
       {/* ---------------------------------------------------------------- */}
       {/* sticky header                                                     */}
       {/* ---------------------------------------------------------------- */}
@@ -74,9 +74,9 @@ export default function LandingPage() {
           position: "sticky",
           top: 0,
           zIndex: 40,
-          background: scrolled ? "rgba(255,255,255,0.92)" : "transparent",
+          background: scrolled ? "var(--kz-header-bg)" : "transparent",
           backdropFilter: scrolled ? "saturate(180%) blur(12px)" : "none",
-          boxShadow: scrolled ? "0 1px 0 rgba(15,23,42,0.08)" : "none",
+          boxShadow: scrolled ? "0 1px 0 var(--kz-border)" : "none",
           transition: "background .2s ease, box-shadow .2s ease",
         }}
       >
@@ -87,7 +87,7 @@ export default function LandingPage() {
 
           <nav style={{ display: "flex", alignItems: "center", gap: 30, flexWrap: "wrap", justifyContent: "center" }}>
             {navLinks.map((l) => (
-              <a key={l.href} href={l.href} className="kz-link" style={{ fontSize: 14, fontWeight: 700, color: "#475569" }}>
+              <a key={l.href} href={l.href} className="kz-link" style={{ fontSize: 14, fontWeight: 700, color: "var(--kz-text-secondary)" }}>
                 {l.label}
               </a>
             ))}
@@ -107,18 +107,18 @@ export default function LandingPage() {
           <h1 style={{ margin: 0, fontSize: "clamp(44px,9vw,104px)", fontWeight: 900, letterSpacing: "-3px", lineHeight: 0.94, textWrap: "balance" }}>
             Skilled. Seen. <span style={{ color: accent }}>Hired.</span>
           </h1>
-          <p style={{ margin: 0, fontSize: "clamp(15px,1.6vw,19px)", color: "#475569", lineHeight: 1.55, maxWidth: 600, textWrap: "pretty" }}>
+          <p style={{ margin: 0, fontSize: "clamp(15px,1.6vw,19px)", color: "var(--kz-text-secondary)", lineHeight: 1.55, maxWidth: 600, textWrap: "pretty" }}>
             Uganda's video-first marketplace for skilled young people. Show the work you can actually do — and get hired for it, with payment held safely until you deliver.
           </p>
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center", marginTop: 6 }}>
-            <button onClick={() => startAuth("signup")} className="kz-pill" style={{ ...pill, padding: "16px 34px", background: "#f1f5f9", color: "#0f172a", fontSize: 15.5 }}>
+            <button onClick={() => startAuth("signup")} className="kz-pill" style={{ ...pill, padding: "16px 34px", background: "var(--kz-surface-2)", color: "var(--kz-text)", fontSize: 15.5 }}>
               I'm hiring
             </button>
             <button onClick={() => startAuth("signup")} className="kz-pill" style={{ ...pill, padding: "16px 34px", background: accent, color: "#fff", fontSize: 15.5, boxShadow: "0 12px 28px rgba(5,150,105,0.3)" }}>
               Post your work
             </button>
           </div>
-          <a href="#featured" className="kz-link" style={{ fontSize: 13.5, color: "#64748b", lineHeight: 1.7, marginTop: 4 }}>
+          <a href="#featured" className="kz-link" style={{ fontSize: 13.5, color: "var(--kz-text-muted)", lineHeight: 1.7, marginTop: 4 }}>
             Real young creators are posting on Kazify today.
             <br />
             See their work ↓
@@ -178,16 +178,16 @@ export default function LandingPage() {
       {/* ---------------------------------------------------------------- */}
       <section id="how-it-works" style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(64px,9vw,110px) 24px" }}>
         <h2 style={{ margin: "0 0 8px", fontSize: "clamp(28px,4.4vw,50px)", fontWeight: 900, letterSpacing: "-1.6px", lineHeight: 1.05, textWrap: "balance" }}>How hiring works</h2>
-        <p style={{ margin: "0 0 44px", fontSize: 15.5, color: "#64748b", maxWidth: 520, lineHeight: 1.6 }}>Three steps, no agencies, no upfront risk.</p>
+        <p style={{ margin: "0 0 44px", fontSize: 15.5, color: "var(--kz-text-muted)", maxWidth: 520, lineHeight: 1.6 }}>Three steps, no agencies, no upfront risk.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 20 }}>
           {steps.map((s, i) => (
-            <div key={s.title} style={{ padding: 28, background: "#f8fafc", borderRadius: 22, display: "flex", flexDirection: "column", gap: 12 }}>
-              <span style={{ width: 46, height: 46, borderRadius: 15, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", color: accent }}>
+            <div key={s.title} style={{ padding: 28, background: "var(--kz-surface)", borderRadius: 22, display: "flex", flexDirection: "column", gap: 12 }}>
+              <span style={{ width: 46, height: 46, borderRadius: 15, background: "var(--kz-bg)", display: "flex", alignItems: "center", justifyContent: "center", color: accent }}>
                 <Icon icon={s.icon} size={21} />
               </span>
-              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, letterSpacing: "0.1em", color: "#94a3b8" }}>0{i + 1}</span>
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, letterSpacing: "0.1em", color: "var(--kz-text-faint)" }}>0{i + 1}</span>
               <span style={{ fontSize: 19, fontWeight: 800, letterSpacing: "-0.5px" }}>{s.title}</span>
-              <span style={{ fontSize: 13.5, color: "#64748b", lineHeight: 1.6 }}>{s.body}</span>
+              <span style={{ fontSize: 13.5, color: "var(--kz-text-muted)", lineHeight: 1.6 }}>{s.body}</span>
             </div>
           ))}
         </div>
@@ -197,13 +197,13 @@ export default function LandingPage() {
       {/* featured work                                                     */}
       {/* ---------------------------------------------------------------- */}
       {showcase.length > 0 && (
-        <section id="featured" style={{ padding: "clamp(48px,7vw,90px) 0", background: "#f8fafc" }}>
+        <section id="featured" style={{ padding: "clamp(48px,7vw,90px) 0", background: "var(--kz-surface)" }}>
           <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 32px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
             <div>
               <h2 style={{ margin: "0 0 8px", fontSize: "clamp(26px,4vw,44px)", fontWeight: 900, letterSpacing: "-1.4px", lineHeight: 1.05 }}>On Kazify right now</h2>
-              <p style={{ margin: 0, fontSize: 15, color: "#64748b", lineHeight: 1.6 }}>Real listings from real creators. Sign up to swipe the full deck.</p>
+              <p style={{ margin: 0, fontSize: 15, color: "var(--kz-text-muted)", lineHeight: 1.6 }}>Real listings from real creators. Sign up to swipe the full deck.</p>
             </div>
-            <button onClick={() => startAuth("signup")} className="kz-pill" style={{ ...pill, padding: "13px 26px", background: "#0f172a", color: "#fff", fontSize: 14 }}>
+            <button onClick={() => startAuth("signup")} className="kz-pill" style={{ ...pill, padding: "13px 26px", background: "var(--kz-text)", color: "var(--kz-bg)", fontSize: 14 }}>
               Browse everything
               <Icon icon="arrow-right" size={15} />
             </button>
@@ -244,7 +244,7 @@ export default function LandingPage() {
             <h2 style={{ margin: 0, fontSize: "clamp(28px,4.4vw,50px)", fontWeight: 900, letterSpacing: "-1.6px", lineHeight: 1.05, textWrap: "balance" }}>
               You already have the skill. Put it where people can hire it.
             </h2>
-            <p style={{ margin: 0, fontSize: 15.5, color: "#64748b", lineHeight: 1.65, maxWidth: 460, textWrap: "pretty" }}>
+            <p style={{ margin: 0, fontSize: 15.5, color: "var(--kz-text-muted)", lineHeight: 1.65, maxWidth: 460, textWrap: "pretty" }}>
               Posting takes a few minutes: upload a clip of your work, set your price and delivery window, and you're live in the deck alongside everyone else.
             </p>
             <button onClick={() => startAuth("signup")} className="kz-pill" style={{ ...pill, alignSelf: "flex-start", padding: "16px 32px", background: accent, color: "#fff", fontSize: 15.5, boxShadow: "0 12px 28px rgba(5,150,105,0.3)" }}>
@@ -255,13 +255,13 @@ export default function LandingPage() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             {creatorPoints.map((c) => (
-              <div key={c.title} style={{ display: "flex", gap: 16, padding: 20, background: "#f8fafc", borderRadius: 18 }}>
-                <span style={{ width: 42, height: 42, flex: "none", borderRadius: 14, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", color: accent }}>
+              <div key={c.title} style={{ display: "flex", gap: 16, padding: 20, background: "var(--kz-surface)", borderRadius: 18 }}>
+                <span style={{ width: 42, height: 42, flex: "none", borderRadius: 14, background: "var(--kz-bg)", display: "flex", alignItems: "center", justifyContent: "center", color: accent }}>
                   <Icon icon={c.icon} size={19} />
                 </span>
                 <span style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <span style={{ fontSize: 14.5, fontWeight: 800, letterSpacing: "-0.2px" }}>{c.title}</span>
-                  <span style={{ fontSize: 13, color: "#64748b", lineHeight: 1.55 }}>{c.body}</span>
+                  <span style={{ fontSize: 13, color: "var(--kz-text-muted)", lineHeight: 1.55 }}>{c.body}</span>
                 </span>
               </div>
             ))}
@@ -272,13 +272,13 @@ export default function LandingPage() {
       {/* ---------------------------------------------------------------- */}
       {/* safety                                                            */}
       {/* ---------------------------------------------------------------- */}
-      <section id="safety" style={{ background: "#ecfdf5", padding: "clamp(56px,8vw,96px) 24px" }}>
+      <section id="safety" style={{ background: "var(--kz-accent-soft)", padding: "clamp(56px,8vw,96px) 24px" }}>
         <div style={{ maxWidth: 780, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 20, textAlign: "center" }}>
-          <span style={{ width: 54, height: 54, borderRadius: 18, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", color: accent }}>
+          <span style={{ width: 54, height: 54, borderRadius: 18, background: "var(--kz-bg)", display: "flex", alignItems: "center", justifyContent: "center", color: accent }}>
             <Icon icon="shield-check" size={25} />
           </span>
           <h2 style={{ margin: 0, fontSize: "clamp(26px,4vw,44px)", fontWeight: 900, letterSpacing: "-1.4px", lineHeight: 1.06, textWrap: "balance" }}>Nobody gets burned</h2>
-          <p style={{ margin: 0, fontSize: 15.5, color: "#047857", lineHeight: 1.65, maxWidth: 560, textWrap: "pretty" }}>
+          <p style={{ margin: 0, fontSize: 15.5, color: "var(--kz-accent-text)", lineHeight: 1.65, maxWidth: 560, textWrap: "pretty" }}>
             Every hire runs through escrow. Clients never pay for work they haven't approved, and creators never deliver without knowing the money is already there. Sellers are ID-verified before their first payout.
           </p>
         </div>
@@ -295,32 +295,32 @@ export default function LandingPage() {
           <button onClick={() => startAuth("signup")} className="kz-pill" style={{ ...pill, padding: "16px 34px", background: accent, color: "#fff", fontSize: 15.5, boxShadow: "0 12px 28px rgba(5,150,105,0.3)" }}>
             Create account
           </button>
-          <button onClick={() => startAuth("login")} className="kz-pill" style={{ ...pill, padding: "16px 34px", background: "#f1f5f9", color: "#0f172a", fontSize: 15.5 }}>
+          <button onClick={() => startAuth("login")} className="kz-pill" style={{ ...pill, padding: "16px 34px", background: "var(--kz-surface-2)", color: "var(--kz-text)", fontSize: 15.5 }}>
             Log in
           </button>
         </div>
-        <span style={{ fontSize: 12.5, color: "#94a3b8" }}>One account for hiring and selling. No password — we email you a code.</span>
+        <span style={{ fontSize: 12.5, color: "var(--kz-text-faint)" }}>One account for hiring and selling. No password — we email you a code.</span>
       </section>
 
       {/* ---------------------------------------------------------------- */}
       {/* footer                                                            */}
       {/* ---------------------------------------------------------------- */}
-      <footer style={{ borderTop: "1px solid #e2e8f0", padding: "40px 24px 56px" }}>
+      <footer style={{ borderTop: "1px solid var(--kz-border)", padding: "40px 24px 56px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexWrap: "wrap", gap: 28, alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <span style={{ fontSize: 20, fontWeight: 900, letterSpacing: "-0.8px" }}>
               Kazi<span style={{ color: accent }}>fy</span>
             </span>
-            <span style={{ fontSize: 12.5, color: "#94a3b8" }}>Skilled young Uganda, hired on merit.</span>
+            <span style={{ fontSize: 12.5, color: "var(--kz-text-faint)" }}>Skilled young Uganda, hired on merit.</span>
           </div>
           <nav style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
             {navLinks.map((l) => (
-              <a key={l.href} href={l.href} className="kz-link" style={{ fontSize: 13, fontWeight: 600, color: "#64748b" }}>
+              <a key={l.href} href={l.href} className="kz-link" style={{ fontSize: 13, fontWeight: 600, color: "var(--kz-text-muted)" }}>
                 {l.label}
               </a>
             ))}
           </nav>
-          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "#94a3b8" }}>© {new Date().getFullYear()} Kazify</span>
+          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11, color: "var(--kz-text-faint)" }}>© {new Date().getFullYear()} Kazify</span>
         </div>
       </footer>
     </div>

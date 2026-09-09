@@ -31,7 +31,7 @@ export default function SellerDashboard() {
           <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
             <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.6px" }}>{me.name}</span>
             {kycVerified && (
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 9px", background: "#ecfdf5", borderRadius: 999, fontSize: 11, fontWeight: 700, color: "#047857" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 9px", background: "var(--kz-accent-soft)", borderRadius: 999, fontSize: 11, fontWeight: 700, color: "var(--kz-accent-text)" }}>
                 <Icon icon="badge-check" size={13} />
                 Verified seller
               </span>
@@ -43,10 +43,10 @@ export default function SellerDashboard() {
               </span>
             )}
           </div>
-          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: "#64748b" }}>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 11.5, color: "var(--kz-text-muted)" }}>
             {me.handle} · {me.city}
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#64748b" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "var(--kz-text-muted)" }}>
             <Icon icon="material-symbols:star-rounded" size={15} style={{ color: "#f59e0b" }} />
             {me.rating != null ? Number(me.rating).toFixed(1) : "No rating yet"}
           </div>
@@ -55,12 +55,12 @@ export default function SellerDashboard() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 12 }}>
         {sellerStats.map((st) => (
-          <div key={st.label} style={{ padding: 16, background: "#f8fafc", borderRadius: 14, display: "flex", flexDirection: "column", gap: 6 }}>
-            <span style={{ display: "flex", color: "#94a3b8" }}>
+          <div key={st.label} style={{ padding: 16, background: "var(--kz-surface)", borderRadius: 14, display: "flex", flexDirection: "column", gap: 6 }}>
+            <span style={{ display: "flex", color: "var(--kz-text-faint)" }}>
               <Icon icon={st.icon} size={16} />
             </span>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 17, color: "#0f172a" }}>{st.value}</span>
-            <span style={{ fontSize: 10.5, letterSpacing: "0.05em", color: "#94a3b8", textTransform: "uppercase" }}>{st.label}</span>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 17, color: "var(--kz-text)" }}>{st.value}</span>
+            <span style={{ fontSize: 10.5, letterSpacing: "0.05em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>{st.label}</span>
           </div>
         ))}
       </div>

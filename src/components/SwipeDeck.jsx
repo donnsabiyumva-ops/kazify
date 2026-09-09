@@ -22,7 +22,7 @@ export default function SwipeDeck() {
   const deckEmpty = visible.length === 0;
 
   return (
-    <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: "28px 24px", background: "#ffffff" }}>
+    <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, padding: "28px 24px", background: "var(--kz-bg)" }}>
       <div style={{ position: "relative", width: "100%", maxWidth: 352, height: "min(72vh,600px)", minHeight: 240 }}>
         {cards.map((c) => (
           <article
@@ -159,14 +159,14 @@ export default function SwipeDeck() {
         ))}
 
         {deckEmpty && (
-          <div style={{ position: "absolute", inset: 0, borderRadius: 20, background: "#f8fafc", animation: "kz-fade 1.4s ease-in-out infinite alternate" }} />
+          <div style={{ position: "absolute", inset: 0, borderRadius: 20, background: "var(--kz-surface)", animation: "kz-fade 1.4s ease-in-out infinite alternate" }} />
         )}
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <button
           onClick={() => swipe("left")}
-          style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 26px", background: "#f1f5f9", border: "none", borderRadius: 14, fontSize: 13.5, fontWeight: 700, color: "#475569" }}
+          style={{ display: "flex", alignItems: "center", gap: 8, padding: "13px 26px", background: "var(--kz-surface-2)", border: "none", borderRadius: 14, fontSize: 13.5, fontWeight: 700, color: "var(--kz-text-secondary)" }}
         >
           <Icon icon="x" size={16} />
           Pass
@@ -179,7 +179,7 @@ export default function SwipeDeck() {
           Shortlist
         </button>
       </div>
-      <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.1em", color: "#94a3b8", textTransform: "uppercase" }}>{visible.length} services left</div>
+      <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.1em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>{visible.length} services left</div>
     </main>
   );
 }

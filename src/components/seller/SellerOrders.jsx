@@ -4,8 +4,8 @@ import { fmt } from "../../lib/format.js";
 
 const pillStyle = {
   new: { background: "#fef3c7", color: "#92400e" },
-  active: { background: "#ecfdf5", color: "#047857" },
-  delivered: { background: "#f1f5f9", color: "#475569" },
+  active: { background: "var(--kz-accent-soft)", color: "var(--kz-accent-text)" },
+  delivered: { background: "var(--kz-surface-2)", color: "var(--kz-text-secondary)" },
 };
 const statusLabel = { new: "New request", active: "In progress", delivered: "Delivered" };
 
@@ -32,35 +32,35 @@ export default function SellerOrders() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
-        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "#94a3b8", textTransform: "uppercase" }}>
+        <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>
           {queueCount} new · queue value UGX {fmt(queueTotal)}
         </span>
-        <button onClick={() => setState({ sellerTab: "Dashboard" })} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, color: "#047857" }}>
+        <button onClick={() => setState({ sellerTab: "Dashboard" })} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, fontWeight: 700, color: "var(--kz-accent-text)" }}>
           <Icon icon="layout-dashboard" size={14} />
           Dashboard
         </button>
       </div>
 
       {queue.map((o) => (
-        <div key={o.id} style={{ display: "flex", flexDirection: "column", gap: 9, padding: "15px 16px", background: "#f8fafc", borderRadius: 14, animation: "kz-rise .24s ease-out" }}>
+        <div key={o.id} style={{ display: "flex", flexDirection: "column", gap: 9, padding: "15px 16px", background: "var(--kz-surface)", borderRadius: 14, animation: "kz-rise .24s ease-out" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <span style={{ fontSize: 13.5, fontWeight: 700 }}>{o.buyer}</span>
             <span style={{ flex: "none", padding: "5px 10px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.02em", ...pillStyle[o.status] }}>{statusLabel[o.status]}</span>
-            <span style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, color: "#94a3b8" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 5, fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, color: "var(--kz-text-faint)" }}>
               <Icon icon="clock" size={12} />
               {o.due}
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 12.5, color: "#64748b", lineHeight: 1.4, flex: 1, minWidth: 180 }}>{o.title}</span>
-            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: "#0f172a" }}>UGX {o.price}</span>
+            <span style={{ fontSize: 12.5, color: "var(--kz-text-muted)", lineHeight: 1.4, flex: 1, minWidth: 180 }}>{o.title}</span>
+            <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 13, color: "var(--kz-text)" }}>UGX {o.price}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
             {o.status === "new" && (
               <>
                 <button
                   onClick={() => declineOrder(o.id)}
-                  style={{ flex: "none", padding: "0 16px", height: 34, background: "#f1f5f9", borderRadius: 9, fontSize: 12, fontWeight: 700, color: "#475569" }}
+                  style={{ flex: "none", padding: "0 16px", height: 34, background: "var(--kz-surface-2)", borderRadius: 9, fontSize: 12, fontWeight: 700, color: "var(--kz-text-secondary)" }}
                 >
                   Decline
                 </button>
@@ -77,7 +77,7 @@ export default function SellerOrders() {
               </button>
             )}
             {o.status === "delivered" && (
-              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "#047857" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "var(--kz-accent-text)" }}>
                 <Icon icon="badge-check" size={15} />
                 Awaiting client approval
               </span>

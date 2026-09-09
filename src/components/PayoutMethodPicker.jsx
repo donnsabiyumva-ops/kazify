@@ -17,7 +17,7 @@ export default function PayoutMethodPicker({ selected, onSelect, accent }) {
               width: "100%",
               borderRadius: 12,
               border: "1.5px solid " + (active ? accent : "transparent"),
-              background: active ? "#ecfdf5" : "#f8fafc",
+              background: active ? "var(--kz-accent-soft)" : "var(--kz-surface)",
             }}
           >
             <span style={{ display: "flex", alignItems: "center", gap: 11 }}>
@@ -26,8 +26,8 @@ export default function PayoutMethodPicker({ selected, onSelect, accent }) {
                   width: 34,
                   height: 24,
                   borderRadius: 6,
-                  background: "#f1f5f9",
-                  color: "#334155",
+                  background: "var(--kz-surface-2)",
+                  color: "var(--kz-text-secondary)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -40,8 +40,8 @@ export default function PayoutMethodPicker({ selected, onSelect, accent }) {
                 {m.short}
               </span>
               <span style={{ display: "flex", flexDirection: "column", gap: 2, textAlign: "left" }}>
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#0f172a" }}>{m.name}</span>
-                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: "#64748b" }}>{m.msisdn}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--kz-text)" }}>{m.name}</span>
+                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10, color: "var(--kz-text-muted)" }}>{m.msisdn}</span>
               </span>
             </span>
             <span
@@ -50,8 +50,8 @@ export default function PayoutMethodPicker({ selected, onSelect, accent }) {
                 height: 16,
                 borderRadius: "50%",
                 flex: "none",
-                border: "1.5px solid " + (active ? accent : "#cbd5e1"),
-                background: active ? accent : "#fff",
+                border: "1.5px solid " + (active ? accent : "var(--kz-border-2)"),
+                background: active ? accent : "var(--kz-bg)",
                 boxShadow: active ? "inset 0 0 0 3px #fff" : "none",
               }}
             />

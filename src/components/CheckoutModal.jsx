@@ -19,36 +19,36 @@ export default function CheckoutModal() {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ width: "100%", maxWidth: 412, background: "#ffffff", borderRadius: 18, boxShadow: "0 24px 60px rgba(15,23,42,0.28)", overflow: "hidden", animation: "kz-rise .22s ease-out" }}
+        style={{ width: "100%", maxWidth: 412, background: "var(--kz-bg)", borderRadius: 18, boxShadow: "0 24px 60px var(--kz-shadow)", overflow: "hidden", animation: "kz-rise .22s ease-out" }}
       >
         <div style={{ padding: "20px 22px 16px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "#059669", textTransform: "uppercase" }}>Escrow checkout</div>
             <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.3px" }}>Hire {co.handle}</div>
           </div>
-          <button onClick={close} style={{ flex: "none", width: 30, height: 30, border: "none", background: "#f1f5f9", borderRadius: 8, color: "#64748b" }}>
+          <button onClick={close} style={{ flex: "none", width: 30, height: 30, border: "none", background: "var(--kz-surface-2)", borderRadius: 8, color: "var(--kz-text-muted)" }}>
             <Icon icon="x" size={15} />
           </button>
         </div>
 
         <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.4, color: "#334155", textWrap: "pretty" }}>{co.title}</div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.4, color: "var(--kz-text-secondary)", textWrap: "pretty" }}>{co.title}</div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "#94a3b8", textTransform: "uppercase" }}>Mobile money source</div>
+            <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>Mobile money source</div>
             <PayoutMethodPicker selected={state.method} onSelect={(key) => setState({ method: key })} accent={accent} />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "#64748b" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--kz-text-muted)" }}>
               <span>Gig amount</span>
-              <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: "#0f172a" }}>UGX {co.price}</span>
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: "var(--kz-text)" }}>UGX {co.price}</span>
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "#64748b" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: "var(--kz-text-muted)" }}>
               <span>Escrow fee (5%)</span>
-              <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: "#0f172a" }}>UGX {fmt(fee)}</span>
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", color: "var(--kz-text)" }}>UGX {fmt(fee)}</span>
             </div>
-            <div style={{ height: 1, background: "#f1f5f9", margin: "3px 0" }} />
+            <div style={{ height: 1, background: "var(--kz-border)", margin: "3px 0" }} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <span style={{ fontSize: 12.5, fontWeight: 700 }}>Total to fund</span>
               <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 15, color: "#059669" }}>UGX {fmt(total)}</span>
@@ -65,7 +65,7 @@ export default function CheckoutModal() {
             <Icon icon={state.funded ? "check" : "zap"} size={15} />
             {state.funded ? "Escrow funded" : "Fund escrow & hire"}
           </button>
-          <div style={{ textAlign: "center", fontSize: 10, color: "#94a3b8" }}>Released on your approval · 7-day dispute window</div>
+          <div style={{ textAlign: "center", fontSize: 10, color: "var(--kz-text-faint)" }}>Released on your approval · 7-day dispute window</div>
         </div>
       </div>
     </div>

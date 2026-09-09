@@ -51,7 +51,7 @@ export default function AuthFlow() {
   const authBack = () => (a.step === "email" ? closeAuth() : editAuth("step", authSteps[Math.max(0, authSteps.indexOf(a.step) - 1)]));
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#ffffff", zIndex: 95, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, overflowY: "auto" }}>
+    <div style={{ position: "fixed", inset: 0, background: "var(--kz-bg)", zIndex: 95, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, overflowY: "auto" }}>
       <div style={{ width: "100%", maxWidth: 396, display: "flex", flexDirection: "column", gap: 26, animation: "kz-rise .24s ease-out" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 32, height: 32, borderRadius: 10, background: accent, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 15 }}>K</div>
@@ -64,7 +64,7 @@ export default function AuthFlow() {
                   width: a.step === st ? 16 : 6,
                   height: 6,
                   borderRadius: 999,
-                  background: authSteps.indexOf(a.step) >= authSteps.indexOf(st) ? accent : "#e2e8f0",
+                  background: authSteps.indexOf(a.step) >= authSteps.indexOf(st) ? accent : "var(--kz-border)",
                   transition: "width .2s ease, background .2s ease",
                 }}
               />
@@ -74,7 +74,7 @@ export default function AuthFlow() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
           <span style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.7px", lineHeight: 1.2, textWrap: "pretty" }}>{auth.title}</span>
-          <span style={{ fontSize: 13, color: "#64748b", lineHeight: 1.5, textWrap: "pretty" }}>{auth.sub}</span>
+          <span style={{ fontSize: 13, color: "var(--kz-text-muted)", lineHeight: 1.5, textWrap: "pretty" }}>{auth.sub}</span>
         </div>
 
         {a.step === "email" && (
@@ -84,9 +84,9 @@ export default function AuthFlow() {
               value={a.email}
               onChange={(e) => editAuth("email", e.target.value)}
               placeholder="you@example.com"
-              style={{ width: "100%", boxSizing: "border-box", padding: "0 14px", height: 48, fontFamily: "'IBM Plex Mono',monospace", fontSize: 14, color: "#0f172a", background: "#f1f5f9", border: "none", borderRadius: 12, outline: "none" }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "0 14px", height: 48, fontFamily: "'IBM Plex Mono',monospace", fontSize: 14, color: "var(--kz-text)", background: "var(--kz-surface-2)", border: "none", borderRadius: 12, outline: "none" }}
             />
-            <span style={{ fontSize: 11.5, color: "#94a3b8", lineHeight: 1.5 }}>Your Mobile Money number is only needed later, when you fund or receive an escrow payment.</span>
+            <span style={{ fontSize: 11.5, color: "var(--kz-text-faint)", lineHeight: 1.5 }}>Your Mobile Money number is only needed later, when you fund or receive an escrow payment.</span>
           </div>
         )}
 
@@ -96,10 +96,10 @@ export default function AuthFlow() {
               value={a.otp}
               onChange={(e) => editAuth("otp", e.target.value.replace(/\D/g, "").slice(0, 10))}
               placeholder="••••••••"
-              style={{ width: "100%", boxSizing: "border-box", padding: "0 18px", height: 56, fontFamily: "'IBM Plex Mono',monospace", fontSize: 22, letterSpacing: "0.3em", color: "#0f172a", background: "#f1f5f9", border: "none", borderRadius: 12, outline: "none" }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "0 18px", height: 56, fontFamily: "'IBM Plex Mono',monospace", fontSize: 22, letterSpacing: "0.3em", color: "var(--kz-text)", background: "var(--kz-surface-2)", border: "none", borderRadius: 12, outline: "none" }}
             />
             <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 12 }}>
-              <button onClick={() => sendEmailCode(a, { resend: true })} style={{ fontSize: 11.5, fontWeight: 700, color: "#94a3b8" }}>
+              <button onClick={() => sendEmailCode(a, { resend: true })} style={{ fontSize: 11.5, fontWeight: 700, color: "var(--kz-text-faint)" }}>
                 Resend code
               </button>
             </div>
@@ -122,14 +122,14 @@ export default function AuthFlow() {
                 <button
                   key={it.key}
                   onClick={() => editAuth("intent", it.key)}
-                  style={{ display: "flex", alignItems: "center", gap: 13, padding: 14, width: "100%", borderRadius: 14, background: active ? "#ecfdf5" : "#f8fafc", boxShadow: active ? "inset 0 0 0 1.5px " + accent : "none" }}
+                  style={{ display: "flex", alignItems: "center", gap: 13, padding: 14, width: "100%", borderRadius: 14, background: active ? "var(--kz-accent-soft)" : "var(--kz-surface)", boxShadow: active ? "inset 0 0 0 1.5px " + accent : "none" }}
                 >
-                  <span style={{ width: 38, height: 38, flex: "none", borderRadius: 12, background: "#ffffff", display: "flex", alignItems: "center", justifyContent: "center", color: active ? accent : "#64748b" }}>
+                  <span style={{ width: 38, height: 38, flex: "none", borderRadius: 12, background: "var(--kz-bg)", display: "flex", alignItems: "center", justifyContent: "center", color: active ? accent : "var(--kz-text-muted)" }}>
                     <Icon icon={it.icon} size={18} />
                   </span>
                   <span style={{ display: "flex", flexDirection: "column", gap: 3, textAlign: "left", flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>{it.label}</span>
-                    <span style={{ fontSize: 11.5, color: "#64748b", lineHeight: 1.4 }}>{it.hint}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--kz-text)" }}>{it.label}</span>
+                    <span style={{ fontSize: 11.5, color: "var(--kz-text-muted)", lineHeight: 1.4 }}>{it.hint}</span>
                   </span>
                   <span
                     style={{
@@ -137,8 +137,8 @@ export default function AuthFlow() {
                       height: 16,
                       borderRadius: "50%",
                       flex: "none",
-                      background: active ? accent : "#ffffff",
-                      boxShadow: active ? "inset 0 0 0 3px #fff, 0 0 0 1.5px " + accent : "0 0 0 1.5px #cbd5e1",
+                      background: active ? accent : "var(--kz-bg)",
+                      boxShadow: active ? "inset 0 0 0 3px #fff, 0 0 0 1.5px " + accent : "0 0 0 1.5px var(--kz-border-2)",
                     }}
                   />
                 </button>
@@ -161,8 +161,8 @@ export default function AuthFlow() {
               borderRadius: 13,
               fontSize: 14,
               fontWeight: 700,
-              background: authValid ? accent : "#e2e8f0",
-              color: authValid ? "#fff" : "#94a3b8",
+              background: authValid ? accent : "var(--kz-border)",
+              color: authValid ? "#fff" : "var(--kz-text-faint)",
               boxShadow: authValid ? "0 8px 20px rgba(5,150,105,0.24)" : "none",
               opacity: busy ? 0.7 : 1,
               cursor: busy ? "wait" : "pointer",
@@ -172,17 +172,17 @@ export default function AuthFlow() {
             {!busy && <Icon icon="arrow-right" size={16} />}
           </button>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <button onClick={authBack} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#94a3b8" }}>
+            <button onClick={authBack} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "var(--kz-text-faint)" }}>
               <Icon icon="chevron-left" size={14} />
               Back
             </button>
             {a.step === "email" && (
-              <button onClick={() => editAuth("mode", a.mode === "login" ? "signup" : "login")} style={{ fontSize: 12, fontWeight: 700, color: "#047857" }}>
+              <button onClick={() => editAuth("mode", a.mode === "login" ? "signup" : "login")} style={{ fontSize: 12, fontWeight: 700, color: "var(--kz-accent-text)" }}>
                 {auth.switchLabel}
               </button>
             )}
           </div>
-          <span style={{ fontSize: 10.5, color: "#94a3b8", lineHeight: 1.5 }}>By continuing you accept the Kazify escrow terms. Funds are only released when a client approves delivery.</span>
+          <span style={{ fontSize: 10.5, color: "var(--kz-text-faint)", lineHeight: 1.5 }}>By continuing you accept the Kazify escrow terms. Funds are only released when a client approves delivery.</span>
         </div>
       </div>
     </div>
@@ -195,8 +195,8 @@ const fieldStyle = {
   padding: "0 14px",
   height: 48,
   fontSize: 14,
-  color: "#0f172a",
-  background: "#f1f5f9",
+  color: "var(--kz-text)",
+  background: "var(--kz-surface-2)",
   border: "none",
   borderRadius: 12,
   outline: "none",

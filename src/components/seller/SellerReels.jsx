@@ -23,16 +23,16 @@ export default function SellerReels() {
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <button
         onClick={upload}
-        style={{ display: "flex", alignItems: "center", gap: 14, padding: 18, background: "#f8fafc", borderRadius: 16, width: "100%", textAlign: "left" }}
+        style={{ display: "flex", alignItems: "center", gap: 14, padding: 18, background: "var(--kz-surface)", borderRadius: 16, width: "100%", textAlign: "left" }}
       >
         <span style={{ width: 46, height: 46, flex: "none", borderRadius: 14, background: accent, display: "flex", alignItems: "center", justifyContent: "center", color: "#ffffff" }}>
           <Icon icon="plus" size={22} />
         </span>
         <span style={{ display: "flex", flexDirection: "column", gap: 3, flex: 1, minWidth: 0 }}>
-          <span style={{ fontSize: 13.5, fontWeight: 700, color: "#0f172a" }}>Upload a new service</span>
-          <span style={{ fontSize: 11.5, color: "#64748b" }}>Drop a 9:16 clip up to 90s · add a caption, gig price and delivery window</span>
+          <span style={{ fontSize: 13.5, fontWeight: 700, color: "var(--kz-text)" }}>Upload a new service</span>
+          <span style={{ fontSize: 11.5, color: "var(--kz-text-muted)" }}>Drop a 9:16 clip up to 90s · add a caption, gig price and delivery window</span>
         </span>
-        <span style={{ display: "flex", color: "#94a3b8" }}>
+        <span style={{ display: "flex", color: "var(--kz-text-faint)" }}>
           <Icon icon="chevron-right" size={18} />
         </span>
       </button>
@@ -42,7 +42,7 @@ export default function SellerReels() {
           <button
             key={a.label}
             onClick={() => say(a.msg)}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 14px", background: "#f1f5f9", borderRadius: 10, fontSize: 12, fontWeight: 700, color: "#475569" }}
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 14px", background: "var(--kz-surface-2)", borderRadius: 10, fontSize: 12, fontWeight: 700, color: "var(--kz-text-secondary)" }}
           >
             <Icon icon={a.icon} size={15} />
             {a.label}
@@ -91,7 +91,7 @@ export default function SellerReels() {
         ))}
         <button
           onClick={upload}
-          style={{ aspectRatio: "9 / 16", borderRadius: 14, background: "#f1f5f9", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, color: "#64748b" }}
+          style={{ aspectRatio: "9 / 16", borderRadius: 14, background: "var(--kz-surface-2)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, color: "var(--kz-text-muted)" }}
         >
           <Icon icon="video" size={22} />
           <span style={{ fontSize: 11.5, fontWeight: 700 }}>New service</span>

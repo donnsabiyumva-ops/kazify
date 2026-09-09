@@ -52,16 +52,16 @@ export default function CreatorProfileOverlay() {
   }));
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#ffffff", zIndex: 70, overflowY: "auto", animation: "kz-fade .18s ease-out" }}>
+    <div style={{ position: "fixed", inset: 0, background: "var(--kz-bg)", zIndex: 70, overflowY: "auto", animation: "kz-fade .18s ease-out" }}>
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "26px 32px 48px", display: "flex", flexDirection: "column", gap: 26 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <button
             onClick={() => setState({ profileId: null })}
-            style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", borderRadius: 10, color: "#334155" }}
+            style={{ width: 32, height: 32, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--kz-surface-2)", borderRadius: 10, color: "var(--kz-text-secondary)" }}
           >
             <Icon icon="chevron-left" size={17} />
           </button>
-          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "#94a3b8", textTransform: "uppercase" }}>Creator profile</span>
+          <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>Creator profile</span>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
@@ -71,15 +71,15 @@ export default function CreatorProfileOverlay() {
           <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0, flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
               <span style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.6px" }}>{profile.handle}</span>
-              <span style={{ padding: "4px 9px", background: "#ecfdf5", borderRadius: 999, fontSize: 11, fontWeight: 700, color: "#047857", display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <span style={{ padding: "4px 9px", background: "var(--kz-accent-soft)", borderRadius: 999, fontSize: 11, fontWeight: 700, color: "var(--kz-accent-text)", display: "inline-flex", alignItems: "center", gap: 5 }}>
                 <Icon icon="material-symbols:star-rounded" size={15} style={{ color: "#f59e0b" }} />
                 {profile.rating} trusted
               </span>
               {pg.isDemo && (
-                <span style={{ padding: "4px 9px", background: "#f1f5f9", borderRadius: 999, fontSize: 11, fontWeight: 700, color: "#64748b" }}>Featured</span>
+                <span style={{ padding: "4px 9px", background: "var(--kz-surface-2)", borderRadius: 999, fontSize: 11, fontWeight: 700, color: "var(--kz-text-muted)" }}>Featured</span>
               )}
             </div>
-            <div style={{ fontSize: 13, color: "#64748b", lineHeight: 1.5, maxWidth: 520, textWrap: "pretty" }}>{profile.bio}</div>
+            <div style={{ fontSize: 13, color: "var(--kz-text-muted)", lineHeight: 1.5, maxWidth: 520, textWrap: "pretty" }}>{profile.bio}</div>
             <div style={{ display: "flex", gap: 26, marginTop: 4, flexWrap: "wrap" }}>
               {[
                 [catalogue.length, "SERVICES"],
@@ -87,8 +87,8 @@ export default function CreatorProfileOverlay() {
                 [profile.onTime, "ON TIME"],
               ].map(([value, label]) => (
                 <span key={label} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 15, color: "#0f172a" }}>{value}</span>
-                  <span style={{ fontSize: 10, letterSpacing: "0.06em", color: "#94a3b8" }}>{label}</span>
+                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 15, color: "var(--kz-text)" }}>{value}</span>
+                  <span style={{ fontSize: 10, letterSpacing: "0.06em", color: "var(--kz-text-faint)" }}>{label}</span>
                 </span>
               ))}
             </div>
@@ -97,7 +97,7 @@ export default function CreatorProfileOverlay() {
             <div style={{ display: "flex", gap: 10, flex: "none" }}>
               <button
                 onClick={() => chat(pg.handle)}
-                style={{ padding: "12px 20px", background: "#f1f5f9", borderRadius: 12, fontSize: 13, fontWeight: 700, color: "#475569", display: "flex", alignItems: "center", gap: 7 }}
+                style={{ padding: "12px 20px", background: "var(--kz-surface-2)", borderRadius: 12, fontSize: 13, fontWeight: 700, color: "var(--kz-text-secondary)", display: "flex", alignItems: "center", gap: 7 }}
               >
                 <Icon icon="message-circle" size={15} />
                 Chat
@@ -114,7 +114,7 @@ export default function CreatorProfileOverlay() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "#94a3b8", textTransform: "uppercase" }}>Catalogue · {catalogue.length} services</div>
+          <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>Catalogue · {catalogue.length} services</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12 }}>
             {catalogue.map((r) => (
               <div key={r.id} onClick={() => setOpenReel(r)} style={{ position: "relative", aspectRatio: "9 / 16", borderRadius: 14, overflow: "hidden", cursor: "pointer", background: r.gradient }}>

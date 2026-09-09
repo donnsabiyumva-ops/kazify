@@ -17,12 +17,12 @@ function Shell() {
   const { state, me } = useKazify();
   const seller = state.role === "freelancer";
 
-  if (!state.bootstrapped) return <div style={{ height: "100vh", background: "#ffffff" }} />;
+  if (!state.bootstrapped) return <div style={{ height: "100vh", background: "var(--kz-bg)" }} />;
 
   if (!me) {
     if (!state.auth) return <LandingPage />;
     return (
-      <div style={{ height: "100vh", background: "#ffffff", color: "#0f172a" }}>
+      <div style={{ height: "100vh", background: "var(--kz-bg)", color: "var(--kz-text)" }}>
         <AuthFlow />
         <Toast />
       </div>
@@ -30,7 +30,7 @@ function Shell() {
   }
 
   return (
-    <div style={{ display: "flex", height: "100vh", minHeight: 0, overflow: "hidden", background: "#ffffff", color: "#0f172a" }}>
+    <div style={{ display: "flex", height: "100vh", minHeight: 0, overflow: "hidden", background: "var(--kz-bg)", color: "var(--kz-text)" }}>
       <Rail />
       {!seller && (
         <>

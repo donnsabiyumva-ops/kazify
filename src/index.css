@@ -1,5 +1,58 @@
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
+:root {
+  color-scheme: light;
+  --kz-bg: #ffffff;
+  --kz-surface: #f8fafc;
+  --kz-surface-2: #f1f5f9;
+  --kz-border: #e2e8f0;
+  --kz-border-2: #cbd5e1;
+  --kz-text: #0f172a;
+  --kz-text-secondary: #475569;
+  --kz-text-muted: #64748b;
+  --kz-text-faint: #94a3b8;
+  --kz-accent-soft: #ecfdf5;
+  --kz-accent-text: #047857;
+  --kz-shadow: rgba(15, 23, 42, 0.12);
+  --kz-header-bg: rgba(255, 255, 255, 0.92);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --kz-bg: #0a0e17;
+    --kz-surface: #131a29;
+    --kz-surface-2: #1a2233;
+    --kz-border: #263048;
+    --kz-border-2: #35415c;
+    --kz-text: #f1f5f9;
+    --kz-text-secondary: #cbd5e1;
+    --kz-text-muted: #94a3b8;
+    --kz-text-faint: #64748b;
+    --kz-accent-soft: rgba(16, 185, 129, 0.16);
+    --kz-accent-text: #34d399;
+    --kz-shadow: rgba(0, 0, 0, 0.4);
+    --kz-header-bg: rgba(10, 14, 23, 0.85);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --kz-bg: #0a0e17;
+  --kz-surface: #131a29;
+  --kz-surface-2: #1a2233;
+  --kz-border: #263048;
+  --kz-border-2: #35415c;
+  --kz-text: #f1f5f9;
+  --kz-text-secondary: #cbd5e1;
+  --kz-text-muted: #94a3b8;
+  --kz-text-faint: #64748b;
+  --kz-accent-soft: rgba(16, 185, 129, 0.16);
+  --kz-accent-text: #34d399;
+  --kz-shadow: rgba(0, 0, 0, 0.4);
+  --kz-header-bg: rgba(10, 14, 23, 0.85);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -13,10 +66,11 @@ body,
 }
 
 body {
-  background: #ffffff;
+  background: var(--kz-bg);
   font-family: "Plus Jakarta Sans", -apple-system, "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
-  color: #0f172a;
+  color: var(--kz-text);
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 a {
@@ -24,7 +78,7 @@ a {
   text-decoration: none;
 }
 a:hover {
-  color: #047857;
+  color: var(--kz-accent-text);
 }
 
 input {
@@ -41,7 +95,7 @@ button {
   transition: color 0.15s ease;
 }
 .kz-link:hover {
-  color: #0f172a;
+  color: var(--kz-text);
 }
 .kz-pill {
   transition: transform 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;

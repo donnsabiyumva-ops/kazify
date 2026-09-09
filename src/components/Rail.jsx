@@ -4,7 +4,7 @@ import { useKazify } from "../store/KazifyContext.jsx";
 import { cats, catIcons, sellerNav, rolesDefs } from "../data/seed.js";
 
 export default function Rail() {
-  const { state, setState, me, notifs, openNotifFrom, accent } = useKazify();
+  const { state, setState, me, notifs, openNotifFrom, escrowInFlightClient, fmt, accent } = useKazify();
   const [hover, setHover] = useState(false);
   const open = state.railPinned || hover;
   const seller = state.role === "freelancer";
@@ -59,7 +59,7 @@ export default function Rail() {
           width: open ? 254 : 72,
           overflowX: "hidden",
           overflowY: "auto",
-          background: "#fff",
+          background: "var(--kz-bg)",
           display: "flex",
           flexDirection: "column",
           boxShadow: open && !state.railPinned ? "18px 0 40px rgba(15,23,42,0.10)" : "none",
@@ -92,8 +92,8 @@ export default function Rail() {
               display: open ? "flex" : "none",
               alignItems: "center",
               justifyContent: "center",
-              background: state.notifOpen ? "#ecfdf5" : "#f1f5f9",
-              color: state.notifOpen ? "#047857" : "#64748b",
+              background: state.notifOpen ? "var(--kz-accent-soft)" : "var(--kz-surface-2)",
+              color: state.notifOpen ? "var(--kz-accent-text)" : "var(--kz-text-muted)",
             }}
           >
             <Icon icon="bell" size={17} />
@@ -114,7 +114,7 @@ export default function Rail() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  boxShadow: "0 0 0 2px #ffffff",
+                  boxShadow: "0 0 0 2px var(--kz-bg)",
                 }}
               >
                 {notifs.length}
@@ -131,11 +131,11 @@ export default function Rail() {
               flex: "none",
               alignItems: "center",
               justifyContent: "center",
-              background: state.railPinned ? "#ecfdf5" : "#f1f5f9",
+              background: state.railPinned ? "var(--kz-accent-soft)" : "var(--kz-surface-2)",
               border: "none",
               borderRadius: 8,
               fontSize: 11,
-              color: state.railPinned ? "#047857" : "#94a3b8",
+              color: state.railPinned ? "var(--kz-accent-text)" : "var(--kz-text-faint)",
             }}
           >
             <Icon icon={state.railPinned ? "pin-off" : "pin"} size={13} />
@@ -143,12 +143,12 @@ export default function Rail() {
         </div>
 
         {state.notifOpen && (
-          <div style={{ margin: "0 12px 14px", padding: 8, background: "#f8fafc", borderRadius: 14, display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ margin: "0 12px 14px", padding: 8, background: "var(--kz-surface)", borderRadius: 14, display: "flex", flexDirection: "column", gap: 4 }}>
             {notifs.map((n, i) => (
               <button
                 key={i}
                 onClick={() => openNotifFrom(n)}
-                style={{ display: "flex", gap: 10, padding: 9, width: "100%", textAlign: "left", borderRadius: 10, background: "#ffffff" }}
+                style={{ display: "flex", gap: 10, padding: 9, width: "100%", textAlign: "left", borderRadius: 10, background: "var(--kz-bg)" }}
               >
                 <span
                   style={{
@@ -156,11 +156,11 @@ export default function Rail() {
                     height: 30,
                     flex: "none",
                     borderRadius: 9,
-                    background: "#f8fafc",
+                    background: "var(--kz-surface)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#64748b",
+                    color: "var(--kz-text-muted)",
                   }}
                 >
                   <Icon icon={n.icon} size={15} />
@@ -171,19 +171,19 @@ export default function Rail() {
                       alignSelf: "flex-start",
                       padding: "2px 7px",
                       borderRadius: 999,
-                      background: n.role === "freelancer" ? "#ecfdf5" : "#f1f5f9",
+                      background: n.role === "freelancer" ? "var(--kz-accent-soft)" : "var(--kz-surface-2)",
                       fontFamily: "'IBM Plex Mono',monospace",
                       fontSize: 8.5,
                       fontWeight: 500,
                       letterSpacing: "0.1em",
                       textTransform: "uppercase",
-                      color: n.role === "freelancer" ? "#047857" : "#475569",
+                      color: n.role === "freelancer" ? "var(--kz-accent-text)" : "var(--kz-text-secondary)",
                     }}
                   >
                     {n.tag}
                   </span>
-                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "#0f172a", lineHeight: 1.35 }}>{n.title}</span>
-                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, color: "#94a3b8" }}>{n.when}</span>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--kz-text)", lineHeight: 1.35 }}>{n.title}</span>
+                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, color: "var(--kz-text-faint)" }}>{n.when}</span>
                 </span>
               </button>
             ))}
@@ -194,21 +194,21 @@ export default function Rail() {
           <div style={{ padding: open ? "0 16px 18px" : "18px 0 18px", display: "flex", justifyContent: "center" }}>
             {open ? (
               <div style={{ position: "relative", display: "flex", alignItems: "center", width: "100%" }}>
-                <span style={{ position: "absolute", left: 11, display: "flex", color: "#94a3b8" }}>
+                <span style={{ position: "absolute", left: 11, display: "flex", color: "var(--kz-text-faint)" }}>
                   <Icon icon="search" size={14} />
                 </span>
                 <input
                   value={state.query}
                   onChange={(e) => setState({ query: e.target.value })}
                   placeholder="Search gigs"
-                  style={{ width: "100%", boxSizing: "border-box", padding: "9px 11px 9px 28px", fontSize: 12.5, color: "#0f172a", background: "#f1f5f9", border: "none", borderRadius: 10, outline: "none" }}
+                  style={{ width: "100%", boxSizing: "border-box", padding: "9px 11px 9px 28px", fontSize: 12.5, color: "var(--kz-text)", background: "var(--kz-surface-2)", border: "none", borderRadius: 10, outline: "none" }}
                 />
               </div>
             ) : (
               <button
                 onClick={() => setState({ railPinned: true })}
                 title="Search gigs"
-                style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9", border: "none", borderRadius: 11, color: "#64748b" }}
+                style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--kz-surface-2)", border: "none", borderRadius: 11, color: "var(--kz-text-muted)" }}
               >
                 <Icon icon="search" size={16} />
               </button>
@@ -216,7 +216,7 @@ export default function Rail() {
           </div>
         )}
 
-        <div style={{ margin: "0 16px 14px", padding: 3, background: "#f1f5f9", borderRadius: 12, display: "flex", flexDirection: open ? "row" : "column", gap: 3 }}>
+        <div style={{ margin: "0 16px 14px", padding: 3, background: "var(--kz-surface-2)", borderRadius: 12, display: "flex", flexDirection: open ? "row" : "column", gap: 3 }}>
           {rolesDefs.map((r) => (
             <button
               key={r.key}
@@ -233,8 +233,8 @@ export default function Rail() {
                 borderRadius: 9,
                 fontSize: 11.5,
                 fontWeight: 700,
-                background: state.role === r.key ? "#ffffff" : "transparent",
-                color: state.role === r.key ? "#0f172a" : "#94a3b8",
+                background: state.role === r.key ? "var(--kz-bg)" : "transparent",
+                color: state.role === r.key ? "var(--kz-text)" : "var(--kz-text-faint)",
                 boxShadow: state.role === r.key ? "0 1px 3px rgba(15,23,42,0.12)" : "none",
               }}
             >
@@ -257,14 +257,14 @@ export default function Rail() {
                 justifyContent: open ? "flex-start" : "center",
                 padding: open ? "9px 11px" : "9px 0",
                 border: "none",
-                background: item.active ? "#ecfdf5" : "transparent",
+                background: item.active ? "var(--kz-accent-soft)" : "transparent",
                 borderRadius: 10,
-                color: item.active ? "#065f46" : "#0f172a",
+                color: item.active ? "var(--kz-accent-text)" : "var(--kz-text)",
                 width: "100%",
                 textAlign: "left",
               }}
             >
-              <span style={{ width: 22, height: 22, borderRadius: 7, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", color: item.active ? "#0f172a" : "#94a3b8" }}>
+              <span style={{ width: 22, height: 22, borderRadius: 7, flex: "none", display: "flex", alignItems: "center", justifyContent: "center", color: item.active ? "var(--kz-text)" : "var(--kz-text-faint)" }}>
                 <Icon icon={item.icon} size={17} />
               </span>
               <span style={{ display: open ? "flex" : "none", flex: 1, minWidth: 0, alignItems: "center", justifyContent: "space-between", gap: 8 }}>
@@ -304,7 +304,7 @@ export default function Rail() {
           <div style={{ display: open ? "flex" : "none", flex: 1, minWidth: 0, alignItems: "center" }}>
             <span style={{ display: "flex", flexDirection: "column", gap: 1, minWidth: 0 }}>
               <span style={{ fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>{me.name}</span>
-              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, color: "#94a3b8", whiteSpace: "nowrap" }}>Escrow · UGX 2.4M</span>
+              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, color: "var(--kz-text-faint)", whiteSpace: "nowrap" }}>Escrow · UGX {fmt(escrowInFlightClient)}</span>
             </span>
           </div>
         </div>

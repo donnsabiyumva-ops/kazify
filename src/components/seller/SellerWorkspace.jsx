@@ -11,13 +11,13 @@ export default function SellerWorkspace() {
   const queueCount = queue.filter((o) => o.status === "new").length;
 
   return (
-    <main style={{ flex: 1, minWidth: 0, overflowY: "auto", background: "#ffffff" }}>
+    <main style={{ flex: 1, minWidth: 0, overflowY: "auto", background: "var(--kz-bg)" }}>
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "26px 32px 44px", display: "flex", flexDirection: "column", gap: 26 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
           <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: "-0.4px" }}>{state.sellerTab}</span>
           <button
             onClick={() => setState({ sellerTab: "Orders" })}
-            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 14px", background: "#f1f5f9", borderRadius: 11, fontSize: 12, fontWeight: 700, color: "#475569" }}
+            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 14px", background: "var(--kz-surface-2)", borderRadius: 11, fontSize: 12, fontWeight: 700, color: "var(--kz-text-secondary)" }}
           >
             <Icon icon="inbox" size={15} />
             {queueCount} new orders
