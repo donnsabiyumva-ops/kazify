@@ -64,6 +64,10 @@ export default function MessagesOverlay() {
   const hireNow = (gigId) => setState({ checkoutId: gigId, chatWith: null, inboxOpen: false, funded: false });
 
   const hireGigId = knownGigId || (sellerGigs.length === 1 ? sellerGigs[0].id : null);
+  const canHire = !!hireGigId || sellerGigs.length > 1;
+  // Hiring is gated on an actual reply, not just the buyer talking into the
+  // void — a real back-and-forth before money moves, not an instant checkout.
+  const sellerHasReplied = showingThread && thread.some((m) => m.senderId === state.chatWith.id);
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "var(--kz-bg)", zIndex: 74, display: "flex", flexDirection: "column", animation: "kz-fade .18s ease-out" }}>
@@ -74,7 +78,13 @@ export default function MessagesOverlay() {
           </button>
           <span style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.3px", flex: 1, minWidth: 0 }}>{showingThread ? state.chatWith.handle : "Messages"}</span>
 
-          {showingThread && hireGigId && (
+          {showingThread && canHire && !sellerHasReplied && (
+            <span style={{ flex: "none", maxWidth: 140, fontSize: 10.5, color: "var(--kz-text-faint)", lineHeight: 1.35, textAlign: "right" }}>
+              Hire Now unlocks once {state.chatWith.handle} replies
+            </span>
+          )}
+
+          {showingThread && sellerHasReplied && hireGigId && (
             <button
               onClick={() => hireNow(hireGigId)}
               style={{ flex: "none", display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", background: accent, borderRadius: 11, fontSize: 12.5, fontWeight: 700, color: "#fff", boxShadow: "0 6px 16px rgba(5,150,105,0.24)" }}
@@ -84,7 +94,7 @@ export default function MessagesOverlay() {
             </button>
           )}
 
-          {showingThread && !hireGigId && sellerGigs.length > 1 && (
+          {showingThread && sellerHasReplied && !hireGigId && sellerGigs.length > 1 && (
             <div style={{ position: "relative", flex: "none" }}>
               <button
                 onClick={() => setHirePickerOpen((o) => !o)}
