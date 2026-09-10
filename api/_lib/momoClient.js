@@ -1,18 +1,15 @@
-// Thin wrapper around MTN MoMo's sandbox Collections/Disbursements APIs.
-// Collections = a client paying into escrow ("request to pay").
-// Disbursements = paying a seller out ("transfer"). These are two entirely
-// separate MTN products with their own subscription key and their own
-// separately-provisioned API user/API key — they don't share credentials.
+// Thin wrapper around MTN MoMo's sandbox Disbursements API ("transfer") —
+// used to pay a seller out on escrow release and on withdrawal. Collections
+// (funding escrow) isn't wired up here: that product wasn't available on
+// the developer portal, so funding stays on the existing simulated flow
+// until it is. Re-adding it later is mechanical — mirror transfer/
+// getTransferStatus below against /collection/v1_0/requesttopay with its
+// own subscription key + separately-provisioned API user/API key.
 
 const BASE_URL = process.env.MTN_SANDBOX_BASE_URL || "https://sandbox.momodeveloper.mtn.com";
 const TARGET_ENVIRONMENT = process.env.MTN_TARGET_ENVIRONMENT || "sandbox";
 
 const CREDENTIALS = {
-  collection: {
-    subscriptionKey: process.env.MTN_COLLECTIONS_SUBSCRIPTION_KEY,
-    apiUser: process.env.MTN_COLLECTIONS_API_USER,
-    apiKey: process.env.MTN_COLLECTIONS_API_KEY,
-  },
   disbursement: {
     subscriptionKey: process.env.MTN_DISBURSEMENTS_SUBSCRIPTION_KEY,
     apiUser: process.env.MTN_DISBURSEMENTS_API_USER,
@@ -38,6 +35,10 @@ async function getAccessToken(product) {
       Authorization: `Basic ${basic}`,
       "Ocp-Apim-Subscription-Key": subscriptionKey,
     },
+    // MTN's sandbox 411s on a bodyless POST here (confirmed empirically) —
+    // it wants a Content-Length header, which fetch only sets when a body
+    // is present, even an empty one.
+    body: "",
   });
   if (!res.ok) throw new Error(`MTN ${product} token request failed: ${res.status} ${await res.text()}`);
   const data = await res.json();
@@ -83,14 +84,6 @@ async function getPaymentStatus(product, endpoint, referenceId) {
   });
   if (!res.ok) throw new Error(`MTN ${product} ${endpoint} status check failed: ${res.status} ${await res.text()}`);
   return res.json(); // { status: "PENDING" | "SUCCESSFUL" | "FAILED", ... }
-}
-
-export function requestToPay(params) {
-  return submitPayment("collection", "collection/v1_0/requesttopay", { ...params, partyField: "payer" });
-}
-
-export function getRequestToPayStatus(referenceId) {
-  return getPaymentStatus("collection", "collection/v1_0/requesttopay", referenceId);
 }
 
 export function transfer(params) {

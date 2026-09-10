@@ -267,30 +267,39 @@ export async function createGig({ sellerId, categoryId, title, price, deliveryDa
 // orders (escrow-backed hires)
 // ---------------------------------------------------------------------
 
-// Submits a real (sandbox) MTN Collections "request to pay" via the
-// serverless function — the subscription key/API credentials never reach
-// the browser. The order row itself is created server-side too, once the
-// gig/payout method are re-validated there; escrow_status starts
-// 'unfunded' and only becomes 'held' once pollCollectionStatus confirms
-// SUCCESSFUL, so this call returning doesn't mean the money moved yet.
+// MTN's Collections product wasn't available on the developer portal, so
+// funding escrow stays simulated (instant, synchronous) — unlike
+// releaseEscrow/withdraw below, which really do go through MTN's sandbox
+// Disbursements API. Revisit this once Collections access comes through;
+// api/_lib/momoClient.js's header comment has the shape to mirror.
 export async function fundEscrow({ gig, clientId, payoutMethodId }) {
-  const res = await fetch("/api/momo/fund-escrow", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ gigId: gig.id, clientId, payoutMethodId }),
-  });
-  const data = await res.json();
-  if (!res.ok) fail("fundEscrow", { message: data.error || `HTTP ${res.status}` });
-  return data; // { orderId, referenceId, momoStatus: "PENDING" }
-}
+  const feeAmount = Math.round(gig.amount * 0.05);
+  const { data, error } = await supabase
+    .from("orders")
+    .insert({
+      gig_id: gig.id,
+      client_id: clientId,
+      seller_id: gig.sellerId,
+      payout_method_id: payoutMethodId,
+      amount: gig.amount,
+      fee_amount: feeAmount,
+      total_amount: gig.amount + feeAmount,
+      escrow_status: "held",
+      due_at: new Date(Date.now() + gig.delivery * 86400000).toISOString().slice(0, 10),
+    })
+    .select()
+    .single();
+  if (error) fail("fundEscrow", error);
 
-// Polls MTN's sandbox for the outcome of a fundEscrow call. Call this on an
-// interval until momoStatus is no longer "PENDING".
-export async function pollCollectionStatus(orderId) {
-  const res = await fetch(`/api/momo/collection-status?orderId=${orderId}`);
-  const data = await res.json();
-  if (!res.ok) fail("pollCollectionStatus", { message: data.error || `HTTP ${res.status}` });
-  return data; // { orderId, escrowStatus, momoStatus }
+  await supabase.from("notifications").insert({
+    profile_id: gig.sellerId,
+    role_context: "selling",
+    kind: "order_new",
+    title: `New order: ${gig.title}`,
+    payload: { order_id: data.id },
+  });
+
+  return data;
 }
 
 function mapOrderRow(row) {

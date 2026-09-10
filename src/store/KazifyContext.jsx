@@ -487,6 +487,11 @@ export function KazifyProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.exit, state._swipeId, me, say]);
 
+  // Simulated (instant) — MTN Collections wasn't available on the developer
+  // portal, so this doesn't go through a real sandbox call the way
+  // approveOrder/withdraw below do. fundStatus still models
+  // submitting/success/failed so the button gets a brief busy state and a
+  // real error path, even though there's no async settlement to wait on.
   const fund = useCallback(async () => {
     const gig = gigsById.current.get(state.checkoutId);
     if (!gig || !me) return;
@@ -497,17 +502,10 @@ export function KazifyProvider({ children }) {
     }
     setState((prev) => ({ ...prev, fundStatus: "submitting" }));
     try {
-      const { orderId } = await api.fundEscrow({ gig, clientId: me.id, payoutMethodId: method.id });
-      setState((prev) => ({ ...prev, fundStatus: "pending" }));
-      const result = await pollUntilSettled(() => api.pollCollectionStatus(orderId));
-      if (result.momoStatus === "SUCCESSFUL") {
-        setState((prev) => ({ ...prev, fundStatus: "success" }));
-        setEscrowInFlightClient((prev) => prev + gig.amount + Math.round(gig.amount * 0.05));
-        setOrdersClient(await api.getOrdersForClient(me.id));
-      } else {
-        setState((prev) => ({ ...prev, fundStatus: "failed" }));
-        say(result.momoStatus === "TIMEOUT" ? "Still confirming with MTN — check back shortly" : "Payment failed — try again");
-      }
+      await api.fundEscrow({ gig, clientId: me.id, payoutMethodId: method.id });
+      setState((prev) => ({ ...prev, fundStatus: "success" }));
+      setEscrowInFlightClient((prev) => prev + gig.amount + Math.round(gig.amount * 0.05));
+      setOrdersClient(await api.getOrdersForClient(me.id));
     } catch (err) {
       setState((prev) => ({ ...prev, fundStatus: "failed" }));
       say(err.message);

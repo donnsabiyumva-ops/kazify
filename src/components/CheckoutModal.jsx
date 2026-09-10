@@ -5,8 +5,7 @@ import { fmt } from "../lib/format.js";
 
 const BUTTON_COPY = {
   idle: { label: "Fund escrow & hire", icon: "zap" },
-  submitting: { label: "Submitting to MTN…", icon: "zap" },
-  pending: { label: "Confirming payment…", icon: "zap" },
+  submitting: { label: "Funding escrow…", icon: "zap" },
   success: { label: "Escrow funded", icon: "check" },
   failed: { label: "Payment failed — retry", icon: "zap" },
 };
@@ -19,7 +18,7 @@ export default function CheckoutModal() {
   const fee = Math.round(co.amount * 0.05);
   const total = Math.round(co.amount * 1.05);
   const close = () => setState({ checkoutId: null, fundStatus: "idle" });
-  const busy = state.fundStatus === "submitting" || state.fundStatus === "pending";
+  const busy = state.fundStatus === "submitting";
   const done = state.fundStatus === "success";
   const copy = BUTTON_COPY[state.fundStatus] || BUTTON_COPY.idle;
 
