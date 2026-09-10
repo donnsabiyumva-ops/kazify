@@ -105,7 +105,30 @@ export async function submitKyc(profileId, { idType, idNumber }) {
 export async function getPayoutMethods(profileId) {
   const { data, error } = await supabase.from("payout_methods").select("*").eq("profile_id", profileId).order("provider");
   if (error) fail("getPayoutMethods", error);
-  return (data ?? []).map((m) => ({ key: m.provider, name: m.label, id: m.id, short: m.provider === "mtn" ? "MTN" : "AIR", msisdn: m.msisdn }));
+  return (data ?? []).map((m) => ({
+    key: m.provider,
+    provider: m.provider,
+    name: m.label,
+    id: m.id,
+    short: m.provider === "mtn" ? "MTN" : "AIR",
+    msisdn: m.msisdn,
+    isDefault: m.is_default,
+  }));
+}
+
+// Adds or updates the signed-in user's MoMo number for a provider (at most
+// one row per provider — payout_methods has a unique(profile_id, provider)
+// constraint). This is the only real MSISDN source for both checkout
+// (paying in) and payouts (paying out) — without one, the MTN sandbox
+// endpoints have nothing to call.
+export async function upsertPayoutMethod(profileId, { provider, label, msisdn, isDefault }) {
+  const { data, error } = await supabase
+    .from("payout_methods")
+    .upsert({ profile_id: profileId, provider, label, msisdn, is_default: !!isDefault }, { onConflict: "profile_id,provider" })
+    .select()
+    .single();
+  if (error) fail("upsertPayoutMethod", error);
+  return data;
 }
 
 // ---------------------------------------------------------------------
@@ -244,34 +267,30 @@ export async function createGig({ sellerId, categoryId, title, price, deliveryDa
 // orders (escrow-backed hires)
 // ---------------------------------------------------------------------
 
+// Submits a real (sandbox) MTN Collections "request to pay" via the
+// serverless function — the subscription key/API credentials never reach
+// the browser. The order row itself is created server-side too, once the
+// gig/payout method are re-validated there; escrow_status starts
+// 'unfunded' and only becomes 'held' once pollCollectionStatus confirms
+// SUCCESSFUL, so this call returning doesn't mean the money moved yet.
 export async function fundEscrow({ gig, clientId, payoutMethodId }) {
-  const feeAmount = Math.round(gig.amount * 0.05);
-  const { data, error } = await supabase
-    .from("orders")
-    .insert({
-      gig_id: gig.id,
-      client_id: clientId,
-      seller_id: gig.sellerId,
-      payout_method_id: payoutMethodId,
-      amount: gig.amount,
-      fee_amount: feeAmount,
-      total_amount: gig.amount + feeAmount,
-      escrow_status: "held",
-      due_at: new Date(Date.now() + gig.delivery * 86400000).toISOString().slice(0, 10),
-    })
-    .select()
-    .single();
-  if (error) fail("fundEscrow", error);
-
-  await supabase.from("notifications").insert({
-    profile_id: gig.sellerId,
-    role_context: "selling",
-    kind: "order_new",
-    title: `New order: ${gig.title}`,
-    payload: { order_id: data.id },
+  const res = await fetch("/api/momo/fund-escrow", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ gigId: gig.id, clientId, payoutMethodId }),
   });
+  const data = await res.json();
+  if (!res.ok) fail("fundEscrow", { message: data.error || `HTTP ${res.status}` });
+  return data; // { orderId, referenceId, momoStatus: "PENDING" }
+}
 
-  return data;
+// Polls MTN's sandbox for the outcome of a fundEscrow call. Call this on an
+// interval until momoStatus is no longer "PENDING".
+export async function pollCollectionStatus(orderId) {
+  const res = await fetch(`/api/momo/collection-status?orderId=${orderId}`);
+  const data = await res.json();
+  if (!res.ok) fail("pollCollectionStatus", { message: data.error || `HTTP ${res.status}` });
+  return data; // { orderId, escrowStatus, momoStatus }
 }
 
 function mapOrderRow(row) {
@@ -367,64 +386,55 @@ export async function deliverOrder(orderId) {
   const { data: client } = await supabase.from("profiles").select("auto_release_escrow").eq("id", data.client_id).maybeSingle();
 
   if (client?.auto_release_escrow) {
-    await releaseEscrow(orderId);
+    // Kicks off the real (sandbox) disbursement — this only submits the
+    // transfer, it doesn't wait for it to resolve, so "released" isn't
+    // true yet. The notification says so; the returned payoutId lets the
+    // caller poll it to completion in the background.
+    const release = await approveOrder(orderId);
     await supabase.from("notifications").insert({
       profile_id: data.client_id,
       role_context: "hiring",
       kind: "delivery_ready",
-      title: `Delivered & auto-approved: ${data.gig?.title ?? "your order"} — escrow released`,
+      title: `Delivered & auto-approved: ${data.gig?.title ?? "your order"} — payout to seller is processing`,
       payload: { order_id: orderId },
     });
-  } else {
-    await supabase.from("notifications").insert({
-      profile_id: data.client_id,
-      role_context: "hiring",
-      kind: "delivery_ready",
-      title: `Delivered: ${data.gig?.title ?? "your order"} — approve to release escrow`,
-      payload: { order_id: orderId },
-    });
+    return { autoReleased: true, payoutId: release.payoutId };
   }
-}
 
-// Marks an order approved, releases its held escrow, and credits the
-// seller's ledger — shared by an explicit client approval and by
-// deliverOrder's auto-release path (client's "auto-release on approval"
-// preference).
-async function releaseEscrow(orderId) {
-  const { data: order, error: fetchError } = await supabase.from("orders").select("seller_id, amount").eq("id", orderId).single();
-  if (fetchError) fail("releaseEscrow", fetchError);
-
-  const { error } = await supabase
-    .from("orders")
-    .update({ status: "approved", approved_at: new Date().toISOString(), escrow_status: "released" })
-    .eq("id", orderId);
-  if (error) fail("releaseEscrow", error);
-
-  const { error: payoutError } = await supabase.from("payouts").insert({
-    profile_id: order.seller_id,
-    order_id: orderId,
-    kind: "escrow_release",
-    amount: Number(order.amount),
-    channel: "Kazify escrow",
-  });
-  if (payoutError) fail("releaseEscrow", payoutError);
-}
-
-// The client explicitly approving a delivered order. Returns who to prompt
-// a review for, so the caller can pop that up right away.
-export async function approveOrder(orderId) {
-  await releaseEscrow(orderId);
-
-  const { data: order } = await supabase.from("orders").select("seller_id, gig:gigs(title)").eq("id", orderId).maybeSingle();
   await supabase.from("notifications").insert({
-    profile_id: order.seller_id,
-    role_context: "selling",
-    kind: "escrow_released",
-    title: `Approved: ${order.gig?.title ?? "your order"} — escrow released to your balance`,
+    profile_id: data.client_id,
+    role_context: "hiring",
+    kind: "delivery_ready",
+    title: `Delivered: ${data.gig?.title ?? "your order"} — approve to release escrow`,
     payload: { order_id: orderId },
   });
+  return { autoReleased: false };
+}
 
-  return { sellerId: order.seller_id, gigTitle: order.gig?.title ?? "" };
+// Marks a delivered order approved and submits a real (sandbox) MTN
+// Disbursements transfer to the seller — via the serverless function, so
+// the seller's payout-method MSISDN and MTN credentials never touch the
+// browser. Returns immediately once MTN accepts the transfer request;
+// escrow_status only becomes 'released' once pollPayoutStatus confirms
+// SUCCESSFUL. Shared by an explicit client approval and deliverOrder's
+// auto-release path (client's "auto-release on approval" preference).
+export async function approveOrder(orderId) {
+  const res = await fetch("/api/momo/release-escrow", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ orderId }),
+  });
+  const data = await res.json();
+  if (!res.ok) fail("approveOrder", { message: data.error || `HTTP ${res.status}` });
+  return data; // { payoutId, referenceId, momoStatus: "PENDING", sellerId, gigTitle }
+}
+
+// Polls MTN's sandbox for the outcome of an approveOrder/withdraw transfer.
+export async function pollPayoutStatus(payoutId) {
+  const res = await fetch(`/api/momo/payout-status?payoutId=${payoutId}`);
+  const data = await res.json();
+  if (!res.ok) fail("pollPayoutStatus", { message: data.error || `HTTP ${res.status}` });
+  return data; // { payoutId, status, momoStatus }
 }
 
 export async function disputeOrder(orderId) {
@@ -516,17 +526,22 @@ export async function getPayouts(profileId) {
     const amount = Number(p.amount);
     const sign = amount >= 0 ? "+" : "−";
     return {
+      id: p.id,
       label: PAYOUT_LABEL[p.kind]?.(p) ?? p.kind,
       date: fmtShortDate(p.created_at),
       channel: p.channel,
       amount: `${sign} ${fmt(Math.abs(amount))}`,
       icon: PAYOUT_ICON[p.kind] ?? "arrow-down-left",
+      status: p.status,
     };
   });
 }
 
+// A 'failed' disbursement never actually paid out, so it must not count
+// toward available balance — otherwise a failed transfer would
+// permanently lock up money it only ever optimistically reserved.
 export async function getAvailableBalance(profileId) {
-  const { data, error } = await supabase.from("payouts").select("amount").eq("profile_id", profileId);
+  const { data, error } = await supabase.from("payouts").select("amount").eq("profile_id", profileId).neq("status", "failed");
   if (error) fail("getAvailableBalance", error);
   return (data ?? []).reduce((sum, p) => sum + Number(p.amount), 0);
 }
@@ -537,9 +552,18 @@ export async function getEscrowHeld(sellerId) {
   return { total: (data ?? []).reduce((sum, o) => sum + Number(o.amount), 0), count: (data ?? []).length };
 }
 
-export async function withdraw(profileId, amount, channel) {
-  const { error } = await supabase.from("payouts").insert({ profile_id: profileId, kind: "withdrawal", amount: -amount, channel });
-  if (error) fail("withdraw", error);
+// Submits a real (sandbox) MTN Disbursements transfer to the seller's own
+// MoMo number — via the serverless function, which re-validates balance,
+// KYC, and the payout method server-side rather than trusting the client.
+export async function withdraw(profileId, amount) {
+  const res = await fetch("/api/momo/withdraw", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ profileId, amount }),
+  });
+  const data = await res.json();
+  if (!res.ok) fail("withdraw", { message: data.error || `HTTP ${res.status}` });
+  return data; // { payoutId, referenceId, momoStatus: "PENDING" }
 }
 
 // ---------------------------------------------------------------------
@@ -620,7 +644,7 @@ export async function getNotifications(profileId) {
     role: n.role_context === "selling" ? "freelancer" : "client",
     tag: n.role_context === "selling" ? "Selling" : "Hiring",
     tab: n.role_context === "selling" ? "Orders" : null,
-    icon: { order_new: "inbox", delivery_ready: "package-check", escrow_released: "wallet", message: "message-circle" }[n.kind] ?? "bell",
+    icon: { order_new: "inbox", delivery_ready: "package-check", escrow_released: "wallet", payout_completed: "wallet", message: "message-circle" }[n.kind] ?? "bell",
     title: n.title,
     when: fmtRelative(n.created_at),
   }));

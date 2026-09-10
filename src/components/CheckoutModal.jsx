@@ -3,14 +3,25 @@ import PayoutMethodPicker from "./PayoutMethodPicker.jsx";
 import { useKazify } from "../store/KazifyContext.jsx";
 import { fmt } from "../lib/format.js";
 
+const BUTTON_COPY = {
+  idle: { label: "Fund escrow & hire", icon: "zap" },
+  submitting: { label: "Submitting to MTN…", icon: "zap" },
+  pending: { label: "Confirming payment…", icon: "zap" },
+  success: { label: "Escrow funded", icon: "check" },
+  failed: { label: "Payment failed — retry", icon: "zap" },
+};
+
 export default function CheckoutModal() {
-  const { state, setState, gigs, fund, accent } = useKazify();
+  const { state, setState, gigs, payoutMethods, fund, accent } = useKazify();
   const co = state.checkoutId ? gigs.find((g) => g.id === state.checkoutId) : null;
   if (!co) return null;
 
   const fee = Math.round(co.amount * 0.05);
   const total = Math.round(co.amount * 1.05);
-  const close = () => setState({ checkoutId: null, funded: false });
+  const close = () => setState({ checkoutId: null, fundStatus: "idle" });
+  const busy = state.fundStatus === "submitting" || state.fundStatus === "pending";
+  const done = state.fundStatus === "success";
+  const copy = BUTTON_COPY[state.fundStatus] || BUTTON_COPY.idle;
 
   return (
     <div
@@ -36,7 +47,7 @@ export default function CheckoutModal() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>Mobile money source</div>
-            <PayoutMethodPicker selected={state.method} onSelect={(key) => setState({ method: key })} accent={accent} />
+            <PayoutMethodPicker methods={payoutMethods} selected={state.method} onSelect={(key) => setState({ method: key })} accent={accent} />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
@@ -59,11 +70,27 @@ export default function CheckoutModal() {
         <div style={{ padding: "0 22px 22px", display: "flex", flexDirection: "column", gap: 9 }}>
           <button
             onClick={fund}
-            disabled={state.funded}
-            style={{ width: "100%", padding: 13, background: accent, border: 0, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontSize: 13.5, fontWeight: 700, color: "#ffffff", boxShadow: "0 6px 16px rgba(5,150,105,0.26)", opacity: state.funded ? 0.7 : 1, cursor: state.funded ? "default" : "pointer" }}
+            disabled={busy || done}
+            style={{
+              width: "100%",
+              padding: 13,
+              background: accent,
+              border: 0,
+              borderRadius: 12,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 7,
+              fontSize: 13.5,
+              fontWeight: 700,
+              color: "#ffffff",
+              boxShadow: "0 6px 16px rgba(5,150,105,0.26)",
+              opacity: busy || done ? 0.7 : 1,
+              cursor: busy || done ? "default" : "pointer",
+            }}
           >
-            <Icon icon={state.funded ? "check" : "zap"} size={15} />
-            {state.funded ? "Escrow funded" : "Fund escrow & hire"}
+            <Icon icon={copy.icon} size={15} />
+            {copy.label}
           </button>
           <div style={{ textAlign: "center", fontSize: 10, color: "var(--kz-text-faint)" }}>Released on your approval · 7-day dispute window</div>
         </div>

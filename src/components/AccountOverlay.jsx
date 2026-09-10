@@ -27,6 +27,7 @@ export default function AccountOverlay() {
     approveOrder,
     disputeOrder,
     rateOrder,
+    payoutMethods,
     fmt,
     accent,
     signOut,
@@ -197,7 +198,7 @@ export default function AccountOverlay() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>Payout sources</div>
-              <PayoutMethodPicker selected={state.method} onSelect={(key) => setState({ method: key })} accent={accent} />
+              <PayoutMethodPicker methods={payoutMethods} selected={state.method} onSelect={(key) => setState({ method: key })} accent={accent} />
             </div>
 
             <PrefsList prefs={{ autoRelease: me.auto_release_escrow, digest: me.weekly_digest }} onToggle={togglePref} />

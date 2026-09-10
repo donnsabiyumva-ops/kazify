@@ -61,7 +61,7 @@ export default function MessagesOverlay() {
     setDraft("");
   };
 
-  const hireNow = (gigId) => setState({ checkoutId: gigId, chatWith: null, inboxOpen: false, funded: false });
+  const hireNow = (gigId) => setState({ checkoutId: gigId, chatWith: null, inboxOpen: false, fundStatus: "idle" });
 
   const hireGigId = knownGigId || (sellerGigs.length === 1 ? sellerGigs[0].id : null);
   const canHire = !!hireGigId || sellerGigs.length > 1;

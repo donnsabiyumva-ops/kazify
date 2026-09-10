@@ -1,12 +1,26 @@
+import { useState } from "react";
 import Icon from "../Icon.jsx";
 import { useKazify } from "../../store/KazifyContext.jsx";
 import { fmt } from "../../lib/format.js";
 
+const STATUS_BADGE = {
+  pending: { label: "Processing", background: "#fef3c7", color: "#92400e" },
+  failed: { label: "Failed", background: "#fee2e2", color: "#b91c1c" },
+};
+
 export default function SellerEarnings() {
   const { me, payouts, availableBalance, escrowHeldSeller, withdraw, refreshKyc, accent } = useKazify();
+  const [withdrawing, setWithdrawing] = useState(false);
   const kycNone = me.kyc_status === "none";
   const kycReview = me.kyc_status === "review";
   const verified = me.kyc_status === "verified";
+
+  const handleWithdraw = async () => {
+    if (withdrawing) return;
+    setWithdrawing(true);
+    await withdraw();
+    setWithdrawing(false);
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
@@ -20,7 +34,8 @@ export default function SellerEarnings() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 9, alignItems: "flex-end" }}>
           <button
-            onClick={withdraw}
+            onClick={handleWithdraw}
+            disabled={withdrawing}
             style={{
               display: "flex",
               alignItems: "center",
@@ -32,10 +47,12 @@ export default function SellerEarnings() {
               fontWeight: 700,
               color: verified ? "#fff" : "var(--kz-text-faint)",
               boxShadow: verified ? "0 6px 16px rgba(5,150,105,0.24)" : "none",
+              opacity: withdrawing ? 0.7 : 1,
+              cursor: withdrawing ? "wait" : "pointer",
             }}
           >
-            <Icon icon={verified ? "arrow-down-to-line" : "lock"} size={16} />
-            Withdraw to MoMo
+            <Icon icon={withdrawing ? "refresh-cw" : verified ? "arrow-down-to-line" : "lock"} size={16} />
+            {withdrawing ? "Processing…" : "Withdraw to MoMo"}
           </button>
           {kycNone && <span style={{ fontSize: 11, color: "var(--kz-text-faint)", maxWidth: 200, textAlign: "right" }}>Tap to verify your ID — takes a minute</span>}
           {kycReview && (
@@ -53,20 +70,28 @@ export default function SellerEarnings() {
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>Recent payouts</span>
         {payouts.length === 0 && <div style={{ padding: "13px 4px", fontSize: 12, color: "var(--kz-text-faint)" }}>No payouts yet.</div>}
-        {payouts.map((p, i) => (
-          <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 4px" }}>
-            <span style={{ width: 34, height: 34, flex: "none", borderRadius: 10, background: "var(--kz-surface-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--kz-text-muted)" }}>
-              <Icon icon={p.icon} size={16} />
-            </span>
-            <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--kz-text)" }}>{p.label}</span>
-              <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, color: "var(--kz-text-faint)" }}>
-                {p.date} · {p.channel}
+        {payouts.map((p, i) => {
+          const badge = STATUS_BADGE[p.status];
+          return (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 4px" }}>
+              <span style={{ width: 34, height: 34, flex: "none", borderRadius: 10, background: "var(--kz-surface-2)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--kz-text-muted)" }}>
+                <Icon icon={p.icon} size={16} />
               </span>
-            </span>
-            <span style={{ flex: "none", fontFamily: "'IBM Plex Mono',monospace", fontSize: 12.5, color: p.amount.charAt(0) === "+" ? "var(--kz-accent-text)" : "var(--kz-text-secondary)" }}>{p.amount}</span>
-          </div>
-        ))}
+              <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--kz-text)" }}>{p.label}</span>
+                  {badge && (
+                    <span style={{ flex: "none", padding: "2px 7px", borderRadius: 999, fontSize: 9.5, fontWeight: 700, background: badge.background, color: badge.color }}>{badge.label}</span>
+                  )}
+                </span>
+                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 10.5, color: "var(--kz-text-faint)" }}>
+                  {p.date} · {p.channel}
+                </span>
+              </span>
+              <span style={{ flex: "none", fontFamily: "'IBM Plex Mono',monospace", fontSize: 12.5, color: p.amount.charAt(0) === "+" ? "var(--kz-accent-text)" : "var(--kz-text-secondary)" }}>{p.amount}</span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

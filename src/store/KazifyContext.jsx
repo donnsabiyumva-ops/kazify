@@ -7,6 +7,18 @@ const ACCENT = "#059669";
 
 const KazifyContext = createContext(null);
 
+// MTN's sandbox request/transfer calls are async — submit, then poll until
+// the status is no longer PENDING (or give up after maxAttempts, since a
+// slow sandbox response shouldn't leave the UI spinning forever).
+async function pollUntilSettled(pollFn, { intervalMs = 3000, maxAttempts = 15 } = {}) {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const result = await pollFn();
+    if (result.momoStatus !== "PENDING") return result;
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return { momoStatus: "TIMEOUT" };
+}
+
 const initialAuth = {
   step: "email",
   mode: "signup",
@@ -26,7 +38,7 @@ const initialState = {
   checkoutId: null,
   profileId: null,
   method: "mtn",
-  funded: false,
+  fundStatus: "idle",
   railPinned: false,
   userOpen: false,
   notifOpen: false,
@@ -134,6 +146,21 @@ export function KazifyProvider({ children }) {
         setPayouts(pay);
         setAvailableBalance(bal);
         setEscrowHeldSeller(held);
+
+        // Safety net for the deliverOrder auto-release path: nobody's
+        // necessarily watching a spinner when that transfer was submitted
+        // (it happens on the seller's action but pays the seller, not the
+        // buyer, so the buyer isn't waiting on it either), so any payout
+        // still 'pending' from a prior session gets one settle attempt
+        // whenever this seller's data loads.
+        const pending = pay.filter((p) => p.status === "pending");
+        if (pending.length) {
+          Promise.all(pending.map((p) => api.pollPayoutStatus(p.id).catch(() => null))).then(async () => {
+            setPayouts(await api.getPayouts(profile.id));
+            setAvailableBalance(await api.getAvailableBalance(profile.id));
+            setEscrowHeldSeller(await api.getEscrowHeld(profile.id));
+          });
+        }
       }
     },
     [cacheGigs]
@@ -323,6 +350,25 @@ export function KazifyProvider({ children }) {
 
   const closeSettings = useCallback(() => setState((prev) => ({ ...prev, draft: null })), []);
 
+  const refreshPayoutMethods = useCallback(async () => {
+    if (!me) return;
+    setPayoutMethods(await api.getPayoutMethods(me.id));
+  }, [me]);
+
+  const savePayoutMethod = useCallback(
+    async ({ provider, label, msisdn, isDefault }) => {
+      if (!me) return;
+      try {
+        await api.upsertPayoutMethod(me.id, { provider, label, msisdn, isDefault });
+        await refreshPayoutMethods();
+        say("MoMo number saved");
+      } catch (err) {
+        say(err.message || "Couldn't save that number — try again");
+      }
+    },
+    [me, say, refreshPayoutMethods]
+  );
+
   const saveSettings = useCallback(() => {
     setState((prev) => {
       const d = prev.draft;
@@ -445,12 +491,25 @@ export function KazifyProvider({ children }) {
     const gig = gigsById.current.get(state.checkoutId);
     if (!gig || !me) return;
     const method = payoutMethods.find((m) => m.key === state.method);
+    if (!method) {
+      say("Add a MoMo number in Settings before hiring");
+      return;
+    }
+    setState((prev) => ({ ...prev, fundStatus: "submitting" }));
     try {
-      await api.fundEscrow({ gig, clientId: me.id, payoutMethodId: method?.id });
-      setState((prev) => ({ ...prev, funded: true }));
-      setEscrowInFlightClient((prev) => prev + gig.amount + Math.round(gig.amount * 0.05));
-      setOrdersClient(await api.getOrdersForClient(me.id));
+      const { orderId } = await api.fundEscrow({ gig, clientId: me.id, payoutMethodId: method.id });
+      setState((prev) => ({ ...prev, fundStatus: "pending" }));
+      const result = await pollUntilSettled(() => api.pollCollectionStatus(orderId));
+      if (result.momoStatus === "SUCCESSFUL") {
+        setState((prev) => ({ ...prev, fundStatus: "success" }));
+        setEscrowInFlightClient((prev) => prev + gig.amount + Math.round(gig.amount * 0.05));
+        setOrdersClient(await api.getOrdersForClient(me.id));
+      } else {
+        setState((prev) => ({ ...prev, fundStatus: "failed" }));
+        say(result.momoStatus === "TIMEOUT" ? "Still confirming with MTN — check back shortly" : "Payment failed — try again");
+      }
     } catch (err) {
+      setState((prev) => ({ ...prev, fundStatus: "failed" }));
       say(err.message);
     }
   }, [state.checkoutId, state.method, me, payoutMethods, say]);
@@ -480,15 +539,24 @@ export function KazifyProvider({ children }) {
 
   const deliverOrder = useCallback(
     async (id) => {
-      await api.deliverOrder(id);
-      say("Delivery sent for approval");
+      const result = await api.deliverOrder(id);
+      say(result.autoReleased ? "Delivery sent — payout to you is processing" : "Delivery sent for approval");
       refetchSellerOrders();
       if (me) {
-        // covers the auto-release case too (buyer has auto-release on, so
-        // deliverOrder may have already paid out the seller)
         setEscrowHeldSeller(await api.getEscrowHeld(me.id));
         setPayouts(await api.getPayouts(me.id));
         setAvailableBalance(await api.getAvailableBalance(me.id));
+      }
+      if (result.autoReleased && result.payoutId) {
+        const sellerId = me?.id;
+        pollUntilSettled(() => api.pollPayoutStatus(result.payoutId)).then(async (settled) => {
+          if (!sellerId) return;
+          setEscrowHeldSeller(await api.getEscrowHeld(sellerId));
+          setPayouts(await api.getPayouts(sellerId));
+          setAvailableBalance(await api.getAvailableBalance(sellerId));
+          if (settled.momoStatus === "SUCCESSFUL") say("Payout completed — funds are in your available balance");
+          else if (settled.momoStatus === "FAILED") say("Your payout failed — it'll show as failed in Earnings");
+        });
       }
     },
     [say, refetchSellerOrders, me]
@@ -503,10 +571,17 @@ export function KazifyProvider({ children }) {
   const approveOrder = useCallback(
     async (id) => {
       try {
-        const { sellerId, gigTitle } = await api.approveOrder(id);
-        say("Approved — escrow released to the seller");
+        say("Releasing payout to the seller…");
+        const { payoutId, sellerId, gigTitle } = await api.approveOrder(id);
         refetchClientOrders();
-        setState((prev) => ({ ...prev, reviewPrompt: { orderId: id, sellerId, gigTitle } }));
+        const result = await pollUntilSettled(() => api.pollPayoutStatus(payoutId));
+        refetchClientOrders();
+        if (result.momoStatus === "SUCCESSFUL") {
+          say("Approved — escrow released to the seller");
+          setState((prev) => ({ ...prev, reviewPrompt: { orderId: id, sellerId, gigTitle } }));
+        } else {
+          say(result.momoStatus === "TIMEOUT" ? "Still processing the payout — check back shortly" : "Approved, but the payout to the seller failed — it'll need a manual retry for now");
+        }
       } catch (err) {
         say(err.message);
       }
@@ -565,11 +640,21 @@ export function KazifyProvider({ children }) {
       say("Nothing available to withdraw yet");
       return;
     }
-    const channel = payoutMethods.find((m) => m.key === "mtn")?.name ?? payoutMethods[0]?.name ?? "MTN MoMo";
-    await api.withdraw(me.id, availableBalance, channel);
-    say(`Withdrawal of UGX ${fmt(availableBalance)} sent to ${channel}`);
-    setPayouts(await api.getPayouts(me.id));
-    setAvailableBalance(await api.getAvailableBalance(me.id));
+    if (!payoutMethods.some((m) => m.key === "mtn")) {
+      say("Add a MoMo number in Settings before withdrawing");
+      return;
+    }
+    try {
+      say("Submitting withdrawal…");
+      const { payoutId } = await api.withdraw(me.id, availableBalance);
+      const result = await pollUntilSettled(() => api.pollPayoutStatus(payoutId));
+      setPayouts(await api.getPayouts(me.id));
+      setAvailableBalance(await api.getAvailableBalance(me.id));
+      if (result.momoStatus === "SUCCESSFUL") say(`Withdrawal of UGX ${fmt(availableBalance)} sent to your MoMo`);
+      else say(result.momoStatus === "TIMEOUT" ? "Still processing — check back shortly" : "Withdrawal failed — try again");
+    } catch (err) {
+      say(err.message);
+    }
   }, [me, availableBalance, payoutMethods, say]);
 
   const submitKycNow = useCallback(
@@ -703,6 +788,8 @@ export function KazifyProvider({ children }) {
       openSettings,
       closeSettings,
       saveSettings,
+      refreshPayoutMethods,
+      savePayoutMethod,
       pickPhoto,
       removePhoto,
       togglePref,
@@ -738,7 +825,7 @@ export function KazifyProvider({ children }) {
       state, patch, me, say, feed, binder, queue, categoriesData, ordersClient, reels, payouts,
       availableBalance, escrowHeldSeller, escrowInFlightClient, notifications, payoutMethods,
       ordersSeller, swipe, editAuth, startAuth, closeAuth, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, signOut, patchMe, editDraft,
-      openSettings, closeSettings, saveSettings, pickPhoto, removePhoto, togglePref, refreshKyc,
+      openSettings, closeSettings, saveSettings, refreshPayoutMethods, savePayoutMethod, pickPhoto, removePhoto, togglePref, refreshKyc,
       upload, createService, fund, acceptOrder, declineOrder, deliverOrder, approveOrder, disputeOrder, rateOrder, closeReviewPrompt, submitReview, withdraw, submitKycNow, becomeSeller, openNotifFrom, chat,
       closeChat, openInbox, closeInbox, sendChatMessage, conversations, thread, threadBusy, cacheGigs,
     ]

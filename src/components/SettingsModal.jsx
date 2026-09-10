@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "./Icon.jsx";
+import PayoutMethodsEditor from "./PayoutMethodsEditor.jsx";
 import { useKazify } from "../store/KazifyContext.jsx";
 import { windowDefs, prefDefs } from "../data/seed.js";
 import { getStoredTheme, setTheme } from "../lib/theme.js";
@@ -104,6 +105,12 @@ export default function SettingsModal() {
               <span style={{ fontSize: 11, fontWeight: 700, color: "var(--kz-text-muted)" }}>Mobile money number</span>
               <input value={d.phone || ""} onChange={(e) => editDraft("phone", e.target.value)} placeholder="+256 77 000 0000" style={{ ...fieldStyle, fontFamily: "'IBM Plex Mono',monospace", fontSize: 12.5 }} />
             </label>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "var(--kz-text-muted)" }}>MoMo payout methods</span>
+            <span style={{ fontSize: 10.5, color: "var(--kz-text-faint)", lineHeight: 1.4 }}>What you pay with at checkout, and what a payout lands on — separate from the mobile money number above.</span>
+            <PayoutMethodsEditor />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
