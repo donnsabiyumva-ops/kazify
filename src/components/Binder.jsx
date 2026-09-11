@@ -24,7 +24,11 @@ export default function Binder() {
         {binder.map((b) => (
           <div key={b.id} style={{ display: "flex", gap: 11, padding: 11, background: "var(--kz-surface)", borderRadius: 12, animation: "kz-rise .26s ease-out" }}>
             <div style={{ width: 42, height: 62, borderRadius: 9, flex: "none", overflow: "hidden", background: "repeating-linear-gradient(115deg,#0f172a 0 7px,#1e293b 7px 14px)" }}>
-              {b.videoUrl && <video src={b.videoUrl} muted loop autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+              {b.videoUrl ? (
+                <video src={b.videoUrl} muted loop autoPlay playsInline style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                b.poster && <img src={b.poster} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              )}
             </div>
             <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>

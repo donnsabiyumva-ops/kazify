@@ -52,6 +52,8 @@ export default function SwipeDeck() {
                 playsInline
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", background: "#0f172a" }}
               />
+            ) : c.poster ? (
+              <img src={c.poster} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
               <div style={{ position: "absolute", inset: 0, background: "repeating-linear-gradient(115deg,#0f172a 0 14px,#131d33 14px 28px)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
                 <div style={{ width: 44, height: 44, borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.45)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
@@ -69,7 +71,9 @@ export default function SwipeDeck() {
                 )}
               </span>
               <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, color: "#ffffff", background: "rgba(15,23,42,0.55)", padding: "5px 8px", borderRadius: 6 }}>{c.duration}</span>
+                {c.videoUrl && (
+                  <span style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9, color: "#ffffff", background: "rgba(15,23,42,0.55)", padding: "5px 8px", borderRadius: 6 }}>{c.duration}</span>
+                )}
                 {c.videoUrl && (
                   <button
                     onClick={() => setMuted((m) => !m)}

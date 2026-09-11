@@ -149,6 +149,12 @@ export async function getCategories() {
 function mapGigRow(row) {
   const seller = row.seller;
   const category = row.category;
+  // A slideshow-media gig has no video_asset_url at all — its photos live
+  // only on the paired reels row. Without this, every slideshow gig
+  // (anyone's, not just the seller's own) rendered as an empty "service
+  // clip" placeholder everywhere a gig card shows up, since every card
+  // only ever knew how to draw a <video>.
+  const reel = row.reels?.[0];
   return {
     id: row.id,
     sellerId: row.seller_id,
@@ -162,10 +168,12 @@ function mapGigRow(row) {
     category: category?.name ?? "—",
     duration: "0:" + String(row.video_duration_seconds ?? 0).padStart(2, "0"),
     videoUrl: row.video_asset_url,
+    poster: !row.video_asset_url ? reel?.slide_urls?.[0] ?? null : null,
   };
 }
 
-const GIG_SELECT = "*, seller:profiles!gigs_seller_id_fkey(handle, rating, is_demo), category:categories(name)";
+const GIG_SELECT =
+  "*, seller:profiles!gigs_seller_id_fkey(handle, rating, is_demo), category:categories(name), reels:reels!reels_gig_id_fkey(media_type, slide_urls)";
 
 export async function getFeed(clientId, { query, categories } = {}) {
   // Only "passed" gigs are excluded — shortlisted ones stay in rotation
