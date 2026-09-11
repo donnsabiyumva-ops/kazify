@@ -1,4 +1,28 @@
+import { useEffect, useState } from "react";
 import Icon from "./Icon.jsx";
+
+// Real, bookmarkable/crawlable URLs for the footer's info pages — no
+// router needed for one modal's worth of routes. pushState + a same-tab
+// custom event (pushState alone fires no event) keeps the address bar and
+// the open doc in sync; popstate covers browser back/forward.
+const LEGAL_PATHS = { "/terms": "terms", "/privacy": "privacy", "/about": "about", "/faq": "faq", "/contact": "contact" };
+const DOC_PATHS = { terms: "/terms", privacy: "/privacy", about: "/about", faq: "/faq", contact: "/contact" };
+const DOC_TITLES = { terms: "Terms of Service", privacy: "Privacy Policy", about: "About", faq: "FAQ", contact: "Contact" };
+const SITE_TITLE = "Kazify Africa | Video-First Freelance Marketplace";
+const ROUTE_EVENT = "kz-legal-route";
+
+export function openLegalDoc(doc) {
+  const path = DOC_PATHS[doc];
+  if (!path || window.location.pathname === path) return;
+  window.history.pushState({}, "", path);
+  window.dispatchEvent(new Event(ROUTE_EVENT));
+}
+
+export function closeLegalDoc() {
+  if (!LEGAL_PATHS[window.location.pathname]) return;
+  window.history.pushState({}, "", "/");
+  window.dispatchEvent(new Event(ROUTE_EVENT));
+}
 
 const SECTION = { display: "flex", flexDirection: "column", gap: 8 };
 const H = { fontSize: 14, fontWeight: 800, color: "var(--kz-text)" };
@@ -199,13 +223,34 @@ const docs = {
 
 const LEGAL_DOCS = new Set(["terms", "privacy"]);
 
-export default function LegalModal({ doc, onClose }) {
+export default function LegalModal() {
+  const [doc, setDoc] = useState(() => LEGAL_PATHS[window.location.pathname] || null);
+
+  useEffect(() => {
+    const sync = () => setDoc(LEGAL_PATHS[window.location.pathname] || null);
+    window.addEventListener("popstate", sync);
+    window.addEventListener(ROUTE_EVENT, sync);
+    return () => {
+      window.removeEventListener("popstate", sync);
+      window.removeEventListener(ROUTE_EVENT, sync);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.title = doc ? `${DOC_TITLES[doc]} — Kazify Africa` : SITE_TITLE;
+    // Keep the canonical tag in sync with the real path — otherwise every
+    // one of these pages claims the homepage as canonical, and Google
+    // treats them as duplicates instead of distinct, indexable pages.
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.href = `https://www.kazifyafrica.com${doc ? DOC_PATHS[doc] : "/"}`;
+  }, [doc]);
+
   const d = doc ? docs[doc] : null;
   if (!d) return null;
 
   return (
     <div
-      onClick={onClose}
+      onClick={closeLegalDoc}
       style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(3px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 90, animation: "kz-fade .18s ease-out" }}
     >
       <div
@@ -217,7 +262,7 @@ export default function LegalModal({ doc, onClose }) {
             <div style={{ fontFamily: "'IBM Plex Mono',monospace", fontSize: 9.5, letterSpacing: "0.12em", color: "#059669", textTransform: "uppercase" }}>Kazify</div>
             <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: "-0.3px" }}>{d.title}</div>
           </div>
-          <button onClick={onClose} style={{ flex: "none", width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--kz-surface-2)", borderRadius: 8, color: "var(--kz-text-muted)" }}>
+          <button onClick={closeLegalDoc} style={{ flex: "none", width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: "var(--kz-surface-2)", borderRadius: 8, color: "var(--kz-text-muted)" }}>
             <Icon icon="x" size={15} />
           </button>
         </div>

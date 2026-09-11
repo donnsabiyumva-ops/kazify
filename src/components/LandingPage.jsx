@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Icon from "./Icon.jsx";
-import LegalModal from "./LegalModal.jsx";
+import { openLegalDoc } from "./LegalModal.jsx";
 import { useKazify } from "../store/KazifyContext.jsx";
 import * as api from "../lib/api.js";
 
@@ -52,7 +52,6 @@ export default function LandingPage() {
   const { startAuth, accent } = useKazify();
   const [featured, setFeatured] = useState([]);
   const [scrolled, setScrolled] = useState(false);
-  const [legalDoc, setLegalDoc] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -352,7 +351,7 @@ export default function LandingPage() {
         >
           <nav style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
             {footerInfoLinks.map((l) => (
-              <button key={l.doc} onClick={() => setLegalDoc(l.doc)} className="kz-link" style={{ fontSize: 12, fontWeight: 600, color: "var(--kz-text-faint)" }}>
+              <button key={l.doc} onClick={() => openLegalDoc(l.doc)} className="kz-link" style={{ fontSize: 12, fontWeight: 600, color: "var(--kz-text-faint)" }}>
                 {l.label}
               </button>
             ))}
@@ -374,8 +373,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-
-      <LegalModal doc={legalDoc} onClose={() => setLegalDoc(null)} />
     </div>
   );
 }

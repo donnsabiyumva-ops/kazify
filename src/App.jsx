@@ -14,6 +14,7 @@ import CheckoutModal from "./components/CheckoutModal.jsx";
 import KycModal from "./components/KycModal.jsx";
 import UploadServiceModal from "./components/UploadServiceModal.jsx";
 import ReviewModal from "./components/ReviewModal.jsx";
+import LegalModal from "./components/LegalModal.jsx";
 
 function Shell() {
   const { state, me } = useKazify();
@@ -59,6 +60,7 @@ export default function App() {
   return (
     <KazifyProvider>
       <Shell />
+      <LegalModal />
     </KazifyProvider>
   );
 }
