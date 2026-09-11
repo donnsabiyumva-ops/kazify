@@ -93,8 +93,11 @@ export function KazifyProvider({ children }) {
             setMe(profile);
             setState((prev) => ({ ...prev, auth: null, role: profile.seller_onboarded ? prev.role : "client" }));
           }
-        } catch {
-          // leave them at the auth screen
+        } catch (err) {
+          // A valid session with no fetchable profile is unusual enough to
+          // be worth a trace — this exact path silently masked the
+          // permission-denied bug that briefly broke session restore.
+          console.error("Session restore: couldn't load profile for signed-in user", err);
         }
       }
       if (!cancelled) setState((prev) => ({ ...prev, bootstrapped: true }));
