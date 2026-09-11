@@ -38,8 +38,18 @@ export async function signOutSession() {
   await supabase.auth.signOut();
 }
 
+// Explicit column list, deliberately excluding email — the client never
+// needs to read it back (it's write-once at signup, used only by Supabase
+// Auth itself for OTP), and the anon/authenticated roles no longer have
+// SELECT on that column at all (see 0010_production_security.sql). A bare
+// select("*")/select() pulls every column including email and fails
+// outright with "permission denied for table profiles" the moment that
+// grant is missing — which is exactly what broke sign-in/sign-up.
+const PROFILE_COLUMNS =
+  "id, name, handle, city, phone, bio, rating, photo_url, escrow_release_window, auto_release_escrow, weekly_digest, seller_onboarded, kyc_status, created_at, is_demo";
+
 export async function getProfileById(id) {
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("profiles").select(PROFILE_COLUMNS).eq("id", id).maybeSingle();
   if (error) fail("getProfileById", error);
   return data;
 }
@@ -56,7 +66,7 @@ export async function createProfile({ id, email, name, handle, city }) {
       handle: handle.charAt(0) === "@" ? handle : "@" + handle,
       city,
     })
-    .select()
+    .select(PROFILE_COLUMNS)
     .single();
   if (error) fail("createProfile", error);
   return data;
@@ -77,19 +87,19 @@ export async function uploadProfilePhoto(profileId, blob) {
 // never touches kyc_status.
 export async function setSellerIntent(profileId, intent) {
   const wantsSelling = intent === "freelancer" || intent === "both";
-  const { data, error } = await supabase.from("profiles").update({ seller_onboarded: wantsSelling }).eq("id", profileId).select().single();
+  const { data, error } = await supabase.from("profiles").update({ seller_onboarded: wantsSelling }).eq("id", profileId).select(PROFILE_COLUMNS).single();
   if (error) fail("setSellerIntent", error);
   return data;
 }
 
 export async function updateProfile(profileId, patch) {
-  const { data, error } = await supabase.from("profiles").update(patch).eq("id", profileId).select().single();
+  const { data, error } = await supabase.from("profiles").update(patch).eq("id", profileId).select(PROFILE_COLUMNS).single();
   if (error) fail("updateProfile", error);
   return data;
 }
 
 export async function refreshKycDemo(profileId) {
-  const { data, error } = await supabase.from("profiles").update({ kyc_status: "verified" }).eq("id", profileId).select().single();
+  const { data, error } = await supabase.from("profiles").update({ kyc_status: "verified" }).eq("id", profileId).select(PROFILE_COLUMNS).single();
   if (error) fail("refreshKycDemo", error);
   return data;
 }
