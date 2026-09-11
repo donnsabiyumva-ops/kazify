@@ -644,16 +644,41 @@ export async function getConversations(meId) {
 // notifications
 // ---------------------------------------------------------------------
 
-export async function getNotifications(profileId) {
-  const { data, error } = await supabase.from("notifications").select("*").eq("profile_id", profileId).order("created_at", { ascending: false }).limit(20);
-  if (error) fail("getNotifications", error);
-  return (data ?? []).map((n) => ({
+const NOTIF_ICON = { order_new: "inbox", delivery_ready: "package-check", escrow_released: "wallet", message: "message-circle" };
+
+// Shared by the initial fetch and the realtime popup below, so a live
+// notification and a reloaded one are always shaped identically.
+function mapNotificationRow(n) {
+  return {
     id: n.id,
     role: n.role_context === "selling" ? "freelancer" : "client",
     tag: n.role_context === "selling" ? "Selling" : "Hiring",
     tab: n.role_context === "selling" ? "Orders" : null,
-    icon: { order_new: "inbox", delivery_ready: "package-check", escrow_released: "wallet", message: "message-circle" }[n.kind] ?? "bell",
+    icon: NOTIF_ICON[n.kind] ?? "bell",
     title: n.title,
     when: fmtRelative(n.created_at),
-  }));
+  };
+}
+
+export async function getNotifications(profileId) {
+  const { data, error } = await supabase.from("notifications").select("*").eq("profile_id", profileId).order("created_at", { ascending: false }).limit(20);
+  if (error) fail("getNotifications", error);
+  return (data ?? []).map(mapNotificationRow);
+}
+
+// Live popup support: fires onInsert the instant a new notification row
+// lands for this profile, while the app is open — instead of only
+// appearing after the next login/reload. Needs the notifications table
+// added to the supabase_realtime publication (0011_realtime_notifications.sql).
+// Returns an unsubscribe function.
+export function subscribeToNotifications(profileId, onInsert) {
+  const channel = supabase
+    .channel(`notifications:${profileId}`)
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "notifications", filter: `profile_id=eq.${profileId}` },
+      (payload) => onInsert(mapNotificationRow(payload.new))
+    )
+    .subscribe();
+  return () => supabase.removeChannel(channel);
 }

@@ -59,6 +59,7 @@ export function KazifyProvider({ children }) {
   const [escrowHeldSeller, setEscrowHeldSeller] = useState({ total: 0, count: 0 });
   const [escrowInFlightClient, setEscrowInFlightClient] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [livePopups, setLivePopups] = useState([]);
   const [payoutMethods, setPayoutMethods] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [thread, setThread] = useState([]);
@@ -165,6 +166,23 @@ export function KazifyProvider({ children }) {
     if (me) reloadAll(me);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me?.id, me?.seller_onboarded, reloadAll]);
+
+  // Live popup for a new notification while the app is open — the bell's
+  // list/badge already reads `notifications`, so prepending here updates
+  // both without a separate fetch.
+  useEffect(() => {
+    if (!me) return;
+    const unsubscribe = api.subscribeToNotifications(me.id, (notif) => {
+      setNotifications((prev) => [notif, ...prev]);
+      setLivePopups((prev) => [...prev, { ...notif, key: `${notif.id}-${Date.now()}` }]);
+    });
+    return unsubscribe;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.id]);
+
+  const dismissPopup = useCallback((key) => {
+    setLivePopups((prev) => prev.filter((p) => p.key !== key));
+  }, []);
 
   // swipe feed: refetch when the client, search, or category filters change
   useEffect(() => {
@@ -718,6 +736,8 @@ export function KazifyProvider({ children }) {
       escrowInFlightClient,
       notifications,
       notifs: notifications,
+      livePopups,
+      dismissPopup,
       payoutMethods,
       queueCount: ordersSeller.filter((o) => o.status === "new").length,
       queueTotal: ordersSeller.reduce((a, o) => a + o.amount, 0),
@@ -769,7 +789,7 @@ export function KazifyProvider({ children }) {
     }),
     [
       state, patch, me, say, feed, binder, queue, categoriesData, ordersClient, reels, payouts,
-      availableBalance, escrowHeldSeller, escrowInFlightClient, notifications, payoutMethods,
+      availableBalance, escrowHeldSeller, escrowInFlightClient, notifications, livePopups, dismissPopup, payoutMethods,
       ordersSeller, swipe, editAuth, startAuth, closeAuth, signInWithGoogle, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, signOut, patchMe, editDraft,
       openSettings, closeSettings, saveSettings, pickPhoto, removePhoto, togglePref, refreshKyc,
       upload, createService, fund, acceptOrder, declineOrder, deliverOrder, approveOrder, disputeOrder, rateOrder, closeReviewPrompt, submitReview, withdraw, submitKycNow, becomeSeller, openNotifFrom, chat,

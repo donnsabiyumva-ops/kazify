@@ -15,6 +15,7 @@ import KycModal from "./components/KycModal.jsx";
 import UploadServiceModal from "./components/UploadServiceModal.jsx";
 import ReviewModal from "./components/ReviewModal.jsx";
 import LegalModal from "./components/LegalModal.jsx";
+import NotificationPopup from "./components/NotificationPopup.jsx";
 
 function Shell() {
   const { state, me } = useKazify();
@@ -51,6 +52,7 @@ function Shell() {
       <KycModal />
       <UploadServiceModal />
       <ReviewModal />
+      <NotificationPopup />
       <Toast />
     </div>
   );
