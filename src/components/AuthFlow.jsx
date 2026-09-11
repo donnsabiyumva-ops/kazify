@@ -20,7 +20,7 @@ const authCopy = (a) => ({
 const authSteps = ["email", "otp", "profile", "intent"];
 
 export default function AuthFlow() {
-  const { state, editAuth, closeAuth, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, say, accent } = useKazify();
+  const { state, editAuth, closeAuth, signInWithGoogle, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, say, accent } = useKazify();
   const a = state.auth;
   const busy = state.authBusy;
 
@@ -79,6 +79,18 @@ export default function AuthFlow() {
 
         {a.step === "email" && (
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <button
+              onClick={signInWithGoogle}
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%", height: 48, borderRadius: 12, fontSize: 13.5, fontWeight: 700, color: "var(--kz-text)", background: "var(--kz-surface-2)" }}
+            >
+              <Icon icon="google" size={17} />
+              Continue with Google
+            </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ flex: 1, height: 1, background: "var(--kz-border)" }} />
+              <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", color: "var(--kz-text-faint)", textTransform: "uppercase" }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "var(--kz-border)" }} />
+            </div>
             <input
               type="email"
               value={a.email}

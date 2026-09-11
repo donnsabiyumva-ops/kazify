@@ -89,9 +89,28 @@ export function KazifyProvider({ children }) {
       if (session?.user) {
         try {
           const profile = await api.getProfileById(session.user.id);
-          if (!cancelled && profile) {
+          if (cancelled) return;
+          if (profile) {
             setMe(profile);
             setState((prev) => ({ ...prev, auth: null, role: profile.seller_onboarded ? prev.role : "client" }));
+          } else {
+            // A real session with no profiles row yet — the redirect back
+            // from Google OAuth lands here on a first-time sign-in, since
+            // there's no unique handle to build a profile from
+            // automatically. Continue through the same profile/intent
+            // steps an OTP signup uses, pre-filled from what Google gave us.
+            const meta = session.user.user_metadata || {};
+            setState((prev) => ({
+              ...prev,
+              auth: {
+                ...initialAuth,
+                mode: "signup",
+                step: "profile",
+                profileId: session.user.id,
+                email: session.user.email || "",
+                name: meta.full_name || meta.name || "",
+              },
+            }));
           }
         } catch (err) {
           // A valid session with no fetchable profile is unusual enough to
@@ -205,6 +224,16 @@ export function KazifyProvider({ children }) {
   const closeAuth = useCallback(() => {
     setState((prev) => ({ ...prev, auth: null }));
   }, []);
+
+  // Redirects to Google — there's no follow-up here, the redirect back is
+  // picked up by the session-restore effect above like any other page load.
+  const signInWithGoogle = useCallback(async () => {
+    try {
+      await api.signInWithGoogle();
+    } catch (err) {
+      say(err.message || "Couldn't reach Google — try again");
+    }
+  }, [say]);
 
   // Sends the email code. Login fails fast here (shouldCreateUser
   // is false) if no account exists for that email — no code is sent.
@@ -696,6 +725,7 @@ export function KazifyProvider({ children }) {
       editAuth,
       startAuth,
       closeAuth,
+      signInWithGoogle,
       sendEmailCode,
       verifyEmailStep,
       resolveProfile,
@@ -740,7 +770,7 @@ export function KazifyProvider({ children }) {
     [
       state, patch, me, say, feed, binder, queue, categoriesData, ordersClient, reels, payouts,
       availableBalance, escrowHeldSeller, escrowInFlightClient, notifications, payoutMethods,
-      ordersSeller, swipe, editAuth, startAuth, closeAuth, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, signOut, patchMe, editDraft,
+      ordersSeller, swipe, editAuth, startAuth, closeAuth, signInWithGoogle, sendEmailCode, verifyEmailStep, resolveProfile, finishAuth, signOut, patchMe, editDraft,
       openSettings, closeSettings, saveSettings, pickPhoto, removePhoto, togglePref, refreshKyc,
       upload, createService, fund, acceptOrder, declineOrder, deliverOrder, approveOrder, disputeOrder, rateOrder, closeReviewPrompt, submitReview, withdraw, submitKycNow, becomeSeller, openNotifFrom, chat,
       closeChat, openInbox, closeInbox, sendChatMessage, conversations, thread, threadBusy, cacheGigs,

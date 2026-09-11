@@ -29,6 +29,20 @@ export async function verifyEmailCode(email, token) {
   return data.session;
 }
 
+// Redirects the browser to Google's consent screen — there's nothing to
+// return here, the session gets picked up on the way back by the same
+// session-restore effect that runs on every app load. Logs an existing
+// account in or creates a new auth.users row; either way, a public.profiles
+// row still needs the same profile/intent steps as an OTP signup, since
+// Google gives no unique handle to build one from.
+export async function signInWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.origin },
+  });
+  if (error) fail("signInWithGoogle", error);
+}
+
 export async function getSession() {
   const { data } = await supabase.auth.getSession();
   return data.session;
