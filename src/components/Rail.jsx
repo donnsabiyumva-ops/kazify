@@ -1,12 +1,16 @@
 import { useState } from "react";
 import Icon from "./Icon.jsx";
 import { useKazify } from "../store/KazifyContext.jsx";
+import { useIsMobile } from "../lib/useIsMobile.js";
 import { cats, catIcons, sellerNav, rolesDefs } from "../data/seed.js";
 
 export default function Rail() {
   const { state, setState, me, notifs, openNotifFrom, openInbox, escrowInFlightClient, fmt, accent } = useKazify();
   const [hover, setHover] = useState(false);
-  const open = state.railPinned || hover;
+  const isMobile = useIsMobile();
+  // Touch has no real hover — on mobile this is a tap-toggled drawer
+  // (railPinned only) instead of a mouseenter/mouseleave expand.
+  const open = isMobile ? state.railPinned : state.railPinned || hover;
   const seller = state.role === "freelancer";
   const sellerOn = me.seller_onboarded;
 
@@ -24,7 +28,10 @@ export default function Rail() {
         label: n.name,
         count: "",
         active: state.sellerTab === n.name,
-        onClick: () => setState({ sellerTab: n.name }),
+        // Seller tabs are a one-shot destination, unlike category filters
+        // below (which are multi-select and stay open on purpose) — closing
+        // the drawer after picking one matches a normal mobile nav pattern.
+        onClick: () => setState((p) => ({ sellerTab: n.name, railPinned: isMobile ? false : p.railPinned })),
       }))
     : cats.map((name) => ({
         key: name,
@@ -48,9 +55,12 @@ export default function Rail() {
 
   return (
     <div style={{ width: 72, flex: "none", position: "relative", zIndex: 50 }}>
+      {isMobile && open && (
+        <div onClick={() => setState({ railPinned: false })} style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.4)", zIndex: 49 }} />
+      )}
       <aside
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
+        onMouseEnter={() => !isMobile && setHover(true)}
+        onMouseLeave={() => !isMobile && setHover(false)}
         style={{
           position: "absolute",
           top: 0,
@@ -76,7 +86,12 @@ export default function Rail() {
             position: "relative",
           }}
         >
-          <div style={{ width: 30, height: 30, borderRadius: 9, background: accent, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14, flex: "none" }}>K</div>
+          <button
+            onClick={() => isMobile && setState((p) => ({ railPinned: !p.railPinned }))}
+            style={{ width: 30, height: 30, borderRadius: 9, background: accent, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14, flex: "none", cursor: isMobile ? "pointer" : "default" }}
+          >
+            K
+          </button>
           <div style={{ display: open ? "flex" : "none", flex: 1, minWidth: 0, alignItems: "center" }}>
             <span style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.4px", whiteSpace: "nowrap" }}>Kazify</span>
           </div>
